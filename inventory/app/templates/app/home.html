@@ -2,6 +2,10 @@
 
 {% block content %}
 
+{% include "navbar.html" %}
+
+{% include "sidebar.html" %}
+
 {% include "app/sub_nav.html" %}
 
 <div class="p-4 sm:ml-64">
@@ -40,7 +44,7 @@
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 color-success">
                     
                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ item.name }}
+                        <a href="{% url 'edit-item' item.id %}">{{ item.name }}</a>
                     </th>
                     <td class="px-6 py-4">
                         {{ item.description }}
@@ -52,7 +56,11 @@
                         {{ item.min_qty }}
                     </td>
                     <td class="px-6 py-4">
+                        {% if item.qty < item.min_qty or item.qty == item.min_qty%}
+                        <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">{{ item.qty }}</span>
+                        {% else %}
                         {{ item.qty }}
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4">
                         <span class="bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-500 ">
@@ -63,7 +71,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4">
-                        Diego
+                        {{ item.updated_by }}
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex">

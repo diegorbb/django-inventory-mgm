@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Item(models.Model):
@@ -9,7 +10,7 @@ class Item(models.Model):
     min_qty = models.PositiveIntegerField(null=True, blank=True)
     qty = models.PositiveIntegerField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
-    # updated_by = 
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.name
