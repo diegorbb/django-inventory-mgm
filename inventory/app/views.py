@@ -39,3 +39,12 @@ def editItem(request, pk):
 
     context = {'form': form}
     return render(request, 'app/edit_item.html', context)
+
+
+def deleteItem(request, pk):
+    item = Item.objects.get(id=pk)
+
+    if request.method == 'POST':
+        item.delete()
+        return redirect('home')
+    return render(request, 'app/delete_item.html', {'obj':item})
