@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Item
+from .models import Item, Incident
 from .forms import ItemForm
 
 @login_required(login_url='login')
@@ -17,6 +17,17 @@ def home(request):
     }
 
     return render(request, 'app/home.html', context)
+
+
+@login_required(login_url='login')
+def incidentPage(request):
+    incidents = Incident.objects.all()
+
+    context = {
+        'incidents': incidents,
+    }
+
+    return render(request, 'app/incidents.html', context)
 
 
 def loginPage(request):
