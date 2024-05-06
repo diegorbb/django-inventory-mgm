@@ -3,8 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AssetMNGR - Dashboard</title>
+    <title>Inv.Mgm - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        footer {
+            margin-top: auto;
+        }
+    </style>
 </head>
 <body>
     {% comment %} {% include "navbar.html" %}
@@ -14,5 +25,7 @@
     {% block content %}
 
     {% endblock %}
+
+    {% include 'footer.html' %}
 </body>
 </html>
