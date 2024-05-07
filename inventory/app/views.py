@@ -30,6 +30,15 @@ def incidentPage(request):
     return render(request, 'app/incidents.html', context)
 
 
+@login_required(login_url='login')
+def incident(request, pk):
+    incident = Incident.objects.get(id=pk)
+    context = {
+        'incident': incident,
+    }
+    return render(request, 'app/incident.html', context)
+
+
 def loginPage(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -53,6 +62,7 @@ def loginPage(request):
     return render(request, 'app/login.html')
 
 
+@login_required(login_url='login')
 def logoutUser(request):
     logout(request)
     return redirect('login')
