@@ -12,4 +12,5 @@ urlpatterns = [
     path('delete-item/<str:pk>/', views.deleteItem, name='delete-item'),
 
     path('incidents/', views.incidentPage, name='incidents'),
+    path('incident/<str:pk>/', views.incident, name='incident'),
 ]
