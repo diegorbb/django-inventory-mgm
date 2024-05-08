@@ -13,4 +13,5 @@ urlpatterns = [
 
     path('incidents/', views.incidentPage, name='incidents'),
     path('incident/<str:pk>/', views.incident, name='incident'),
+    path('create-incident/', views.createIncident, name='create-incident'),
 ]

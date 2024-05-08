@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
 from .models import Item, Incident
-from .forms import ItemForm
+from .forms import ItemForm, IncidentForm
 
 @login_required(login_url='login')
 def home(request):
@@ -27,16 +27,32 @@ def incidentPage(request):
         'incidents': incidents,
     }
 
-    return render(request, 'app/incidents.html', context)
+    return render(request, 'app/incidents/incidents.html', context)
 
 
 @login_required(login_url='login')
 def incident(request, pk):
     incident = Incident.objects.get(id=pk)
+    requester = request.GET.get('requester')
     context = {
         'incident': incident,
+        'requester': requester,
     }
-    return render(request, 'app/incident.html', context)
+    return render(request, 'app/incidents/incident.html', context)
+
+
+@login_required(login_url='login')
+def createIncident(request):
+    form = IncidentForm()
+
+    if request.method == 'POST':
+        form = IncidentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('incidents')
+    
+    context = {'form': form}
+    return render(request, 'app/incidents/create_incident.html', context)
 
 
 def loginPage(request):
