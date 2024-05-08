@@ -1,0 +1,45 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+{% include "navbar.html" %}
+
+{% include "sidebar.html" %}
+
+<div class="p-4 sm:ml-64">
+    <div class="relative overflow-x-auto">
+        <div class="max-w-4xl mx-auto px-4 pt-12 py-10">
+            <h1 class="text-3xl font-bold mb-4">{{ incident.subject }}</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-lg font-semibold mb-4">Description</p>
+                    <p>{{ incident.description }}</p>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-2">Incident Details</h2>
+                    <div class="flex flex-col">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-700">Owner:</span>
+                            <span class="text-blue-600 font-semibold">{{ incident.requester }}</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-700">Status:</span>
+                            <span class="text-blue-600 font-semibold">{{ incident.status }}</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-700">Priority:</span>
+                            <span class="text-yellow-600 font-semibold">{{ incident.priority }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Date Created:</span>
+                            <span class="text-gray-600">{{ incident.created }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+    
+{% endblock %}
