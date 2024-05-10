@@ -55,6 +55,21 @@ def createIncident(request):
     return render(request, 'app/incidents/create_incident.html', context)
 
 
+@login_required(login_url='login')
+def editIncident(request, pk):
+    incident = Incident.objects.get(id=pk)
+    form = IncidentForm(instance=incident)
+
+    if request.method == 'POST':
+        form = IncidentForm(request.POST, instance=incident)
+        if form.is_valid():
+            form.save()
+            return redirect('incidents')
+
+    context = {'form': form}
+    return render(request, 'app/incidents/edit_incident.html', context)
+
+
 def loginPage(request):
     if request.user.is_authenticated:
         return redirect('home')
