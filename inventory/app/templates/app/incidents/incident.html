@@ -16,6 +16,11 @@
                     <p>{{ incident.description }}</p>
                 </div>
                 <div class="bg-gray-100 p-4 rounded-lg">
+                    <div class="w-full lg:w-auto ml-auto px-3 flex items-center">
+                        <a class="inline-flex items-center py-2 px-3 text-xs text-white font-medium bg-indigo-500 hover:bg-indigo-600 rounded" href="{% url 'edit-incident' incident.id %}">
+                            <span>Edit Incident</span>
+                        </a>
+                    </div>
                     <h2 class="text-lg font-semibold mb-2">Incident Details</h2>
                     <div class="flex flex-col">
                         <div class="flex justify-between mb-2">
