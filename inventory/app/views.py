@@ -4,39 +4,105 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Item, Incident
-from .forms import ItemForm, IncidentForm
+from .models import Item, Incident, Comment
+from .forms import ItemForm, IncidentForm, CommentForm, UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm
+from django.contrib.admin.views.decorators import staff_member_required
+import random
+import string
+from django.db.models import F, Q
+from django.utils import timezone
+from datetime import timedelta
+
 
 @login_required(login_url='login')
-def home(request):
+def dashboard(request):
+    total_items = Item.objects.count()
+    low_stock_items = Item.objects.filter(qty__lte=F('min_qty')).count()
+    total_incidents = Incident.objects.count()
+    open_incidents = Incident.objects.filter(status='Open').count()
+    
+    context = {
+        'total_items': total_items,
+        'low_stock_items': low_stock_items,
+        'total_incidents': total_incidents,
+        'open_incidents': open_incidents,
+    }
+    return render(request, 'app/dashboard.html', context)
 
+
+@login_required(login_url='login')
+def inventory(request):  # Rename from home to inventory
+    search_query = request.GET.get('search', '')
     items = Item.objects.all()
-
+    
+    if search_query:
+        items = items.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(location__icontains=search_query)
+        )
+    
     context = {
         'items': items,
+        'search_query': search_query
     }
-
-    return render(request, 'app/home.html', context)
+    return render(request, 'app/inventory.html', context)
 
 
 @login_required(login_url='login')
 def incidentPage(request):
+    search_query = request.GET.get('search', '')
+    days = request.GET.get('days', '')
+    status_filter = request.GET.get('status', 'active')  # Default to active incidents
+    
     incidents = Incident.objects.all()
-
+    
+    # Filter by search query
+    if search_query:
+        incidents = incidents.filter(
+            Q(subject__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Filter by days
+    if days:
+        cutoff_date = timezone.now() - timedelta(days=int(days))
+        incidents = incidents.filter(created__gte=cutoff_date)
+    
+    # Filter by status
+    if status_filter == 'active':
+        incidents = incidents.exclude(status='Resolved')
+    elif status_filter != 'all':
+        incidents = incidents.filter(status=status_filter)
+    
     context = {
         'incidents': incidents,
+        'search_query': search_query,
+        'days': days,
+        'status_filter': status_filter
     }
-
     return render(request, 'app/incidents/incidents.html', context)
 
 
 @login_required(login_url='login')
 def incident(request, pk):
     incident = Incident.objects.get(id=pk)
-    requester = request.GET.get('requester')
+    comments = incident.comments.all()
+    comment_form = CommentForm()
+
+    if request.method == 'POST':
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.incident = incident
+            comment.author = request.user
+            comment.save()
+            return redirect('incident', pk=pk)
+
     context = {
         'incident': incident,
-        'requester': requester,
+        'comments': comments,
+        'comment_form': comment_form
     }
     return render(request, 'app/incidents/incident.html', context)
 
@@ -58,15 +124,21 @@ def createIncident(request):
 @login_required(login_url='login')
 def editIncident(request, pk):
     incident = Incident.objects.get(id=pk)
+    
+    # Check if user is incident owner
+    if request.user != incident.requester:
+        messages.error(request, 'You are not authorized to edit this incident.')
+        return redirect('incident', pk=pk)
+        
     form = IncidentForm(instance=incident)
 
     if request.method == 'POST':
         form = IncidentForm(request.POST, instance=incident)
         if form.is_valid():
             form.save()
-            return redirect('incidents')
+            return redirect('incident', pk=pk)
 
-    context = {'form': form}
+    context = {'incident': incident, 'form': form}
     return render(request, 'app/incidents/edit_incident.html', context)
 
 
@@ -137,3 +209,80 @@ def deleteItem(request, pk):
         item.delete()
         return redirect('home')
     return render(request, 'app/delete_item.html', {'obj':item})
+
+
+@login_required(login_url='login')
+def add_comment(request, pk):  # Changed from incident_id to pk
+    incident = Incident.objects.get(id=pk)
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        comment = Comment.objects.create(
+            incident=incident,
+            author=request.user,
+            content=content
+        )
+        return redirect('incident', pk=pk)  # Updated to use pk
+    return redirect('incident', pk=pk)
+
+
+@login_required(login_url='login')
+def delete_comment(request, pk, comment_id):  # Match URL parameters
+    comment = Comment.objects.get(id=comment_id)
+    incident_id = comment.incident.id
+    
+    # Check if user is comment owner
+    if request.user != comment.author:
+        messages.error(request, 'You are not authorized to delete this comment.')
+        return redirect('incident', pk=incident_id)
+
+    if request.method == 'POST':
+        comment.delete()
+        messages.success(request, 'Comment deleted successfully.')
+        return redirect('incident', pk=incident_id)
+    return redirect('incident', pk=incident_id)
+
+
+@login_required(login_url='login')
+def profile(request):
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile has been updated!')
+            return redirect('profile')
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form
+    }
+    return render(request, 'app/users/profile.html', context)
+
+@login_required(login_url='login')
+@staff_member_required
+def users_list(request):
+    users = User.objects.all()
+    context = {'users': users}
+    return render(request, 'app/users/users_list.html', context)
+
+
+@login_required(login_url='login')
+@staff_member_required
+def create_user(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'User {user.username} created successfully!')
+            return redirect('users')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'app/users/create_user.html', {'form': form})

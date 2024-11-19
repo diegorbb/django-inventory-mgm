@@ -1,10 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inv.Mgm - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tiny.cloud/1/YOUR_API_KEY/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        // Check for saved dark mode preference or system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark')
+                localStorage.theme = 'light'
+            } else {
+                document.documentElement.classList.add('dark')
+                localStorage.theme = 'dark'
+            }
+        }
+    </script>
     <style>
         body {
             display: flex;
@@ -17,15 +36,42 @@
         }
     </style>
 </head>
-<body>
-    {% comment %} {% include "navbar.html" %}
-
-    {% include "sidebar.html" %} {% endcomment %}
-
-    {% block content %}
-
-    {% endblock %}
+<body class="bg-white dark:bg-gray-900">
+    {% include "navbar.html" %}
+    
+    <div class="pt-16 flex-grow"> <!-- Add padding-top here -->
+        {% block content %}
+        {% endblock %}
+    </div>
 
     {% include 'footer.html' %}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const darkIcon = document.getElementById('dark-icon');
+        const lightIcon = document.getElementById('light-icon');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // Set initial state
+        function updateIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+            } else {
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+            }
+        }
+
+        updateIcons();
+
+        // Add click event listener
+        themeToggle.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            updateIcons();
+        });
+    });
+    </script>
 </body>
 </html>

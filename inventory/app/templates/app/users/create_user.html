@@ -1,0 +1,101 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% include "navbar.html" %}
+{% include "sidebar.html" %}
+
+<div class="p-4 sm:ml-64">
+    <div class="max-w-2xl mx-auto py-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="p-6">
+                <h2 class="text-xl font-medium text-gray-900 dark:text-white mb-6">Create New User</h2>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="space-y-6">
+                        {% for field in form %}
+                        {% if field.name != 'password1' and field.name != 'password2' %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ field.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="relative mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                        <div class="relative">
+                            {{ form.password1 }}
+                            <button type="button" 
+                                    onclick="togglePassword('id_password1')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+                        <div class="relative">
+                            {{ form.password2 }}
+                            <button type="button" 
+                                    onclick="togglePassword('id_password2')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 mb-4">
+                        <button type="button" 
+                                onclick="generatePassword()"
+                                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                            Generate Secure Password
+                        </button>
+                    </div>
+
+                    <div class="mt-6">
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Create User
+                        </button>
+                        <a href="{% url 'users' %}" class="ml-3 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.type = field.type === 'password' ? 'text' : 'password';
+}
+
+function generatePassword() {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    
+    // Set both password fields
+    document.getElementById('id_password1').value = password;
+    document.getElementById('id_password2').value = password;
+}
+</script>
+
+{% endblock %}

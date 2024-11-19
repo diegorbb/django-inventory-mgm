@@ -1,20 +1,74 @@
 {% load static %}
 
+<!-- navbar.html -->
 <div class="container">
     <nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div class="px-3 py-3 lg:px-5 lg:pl-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center justify-start rtl:justify-end">
-                    <a href="{% url 'home' %}" class="flex ms-2 md:me-24">
+                    <a href="{% url 'dashboard' %}" class="flex ms-2 md:me-24">
                         <img src="{% static 'images/logo-invmgm.png' %}" class="h-8 me-3" alt="logo" />
                     </a>
                 </div>
                 <div class="flex items-center">
                     <div class="font-medium dark:text-white">
-                        <div>You're logged in as: <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">{{user.username}}</span></div>
+                        <div>
+                            You're logged in as: 
+                            <a href="{% url 'profile' %}" class="hover:opacity-75">
+                                <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
+                                    {{user.username}}
+                                </span>
+                            </a>
+                        </div>
                     </div>
+                    <button id="theme-toggle" 
+                            type="button" 
+                            class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+                        <svg id="dark-icon" 
+                             class="w-5 h-5" 
+                             fill="currentColor" 
+                             viewBox="0 0 24 24">
+                            <path d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                        </svg>
+                        <svg id="light-icon" 
+                             class="hidden w-5 h-5" 
+                             fill="currentColor" 
+                             viewBox="0 0 24 24">
+                            <path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 </div>
+
+<script>
+function toggleDarkMode() {
+    const darkIcon = document.getElementById('dark-icon');
+    const lightIcon = document.getElementById('light-icon');
+
+    if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        darkIcon.classList.remove('hidden');
+        lightIcon.classList.add('hidden');
+        localStorage.theme = 'light';
+    } else {
+        document.documentElement.classList.add('dark');
+        darkIcon.classList.add('hidden');
+        lightIcon.classList.remove('hidden');
+        localStorage.theme = 'dark';
+    }
+}
+
+// Set initial icon state
+const darkIcon = document.getElementById('dark-icon');
+const lightIcon = document.getElementById('light-icon');
+if (document.documentElement.classList.contains('dark')) {
+    darkIcon.classList.add('hidden');
+    lightIcon.classList.remove('hidden');
+} else {
+    darkIcon.classList.remove('hidden');
+    lightIcon.classList.add('hidden');
+}
+</script>
