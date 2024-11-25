@@ -3,29 +3,36 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponse
-from .models import Item, Incident, Comment
-from .forms import ItemForm, IncidentForm, CommentForm, UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm
+from django.http import HttpResponse, JsonResponse
+from .models import Item, Incident, Comment, Software
+from .forms import ItemForm, IncidentForm, CommentForm, UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm, SoftwareForm
 from django.contrib.admin.views.decorators import staff_member_required
 import random
 import string
 from django.db.models import F, Q
 from django.utils import timezone
 from datetime import timedelta
-
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 @login_required(login_url='login')
 def dashboard(request):
     total_items = Item.objects.count()
     low_stock_items = Item.objects.filter(qty__lte=F('min_qty')).count()
+    low_stock_items_list = Item.objects.filter(qty__lte=F('min_qty'))[:5]
     total_incidents = Incident.objects.count()
     open_incidents = Incident.objects.filter(status='Open').count()
+    recent_incidents = Incident.objects.all().order_by('-created')[:5]
+    software_data = Software.objects.all()
     
     context = {
         'total_items': total_items,
         'low_stock_items': low_stock_items,
+        'low_stock_items_list': low_stock_items_list,
         'total_incidents': total_incidents,
         'open_incidents': open_incidents,
+        'recent_incidents': recent_incidents,
+        'software_data': software_data,
     }
     return render(request, 'app/dashboard.html', context)
 
@@ -79,7 +86,7 @@ def incidentPage(request):
         'incidents': incidents,
         'search_query': search_query,
         'days': days,
-        'status_filter': status_filter
+        'status_filter': status_filter,
     }
     return render(request, 'app/incidents/incidents.html', context)
 
@@ -109,13 +116,16 @@ def incident(request, pk):
 
 @login_required(login_url='login')
 def createIncident(request):
-    form = IncidentForm()
 
     if request.method == 'POST':
         form = IncidentForm(request.POST)
         if form.is_valid():
+            incident = form.save(commit=False)
+            incident.requester = request.user
             form.save()
             return redirect('incidents')
+    else:
+        form = IncidentForm()
     
     context = {'form': form}
     return render(request, 'app/incidents/create_incident.html', context)
@@ -124,6 +134,7 @@ def createIncident(request):
 @login_required(login_url='login')
 def editIncident(request, pk):
     incident = Incident.objects.get(id=pk)
+
     
     # Check if user is incident owner
     if request.user != incident.requester:
@@ -144,7 +155,7 @@ def editIncident(request, pk):
 
 def loginPage(request):
     if request.user.is_authenticated:
-        return redirect('home')
+        return redirect('dashboard')
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -159,7 +170,7 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
-            return redirect('home')
+            return redirect('dashboard')
         else:
             messages.error(request, 'User does not exist.')
     return render(request, 'app/login.html')
@@ -179,7 +190,7 @@ def createItem(request):
         form = ItemForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('home')
+            return redirect('inventory')
     
     context = {'form': form}
     return render(request, 'app/create_item.html', context)
@@ -195,7 +206,7 @@ def editItem(request, pk):
         if form.is_valid():
             form.instance.updated_by = request.user
             form.save()
-            return redirect('home')
+            return redirect('inventory')
 
     context = {'form': form}
     return render(request, 'app/edit_item.html', context)
@@ -207,7 +218,7 @@ def deleteItem(request, pk):
 
     if request.method == 'POST':
         item.delete()
-        return redirect('home')
+        return redirect('inventory')
     return render(request, 'app/delete_item.html', {'obj':item})
 
 
@@ -286,3 +297,82 @@ def create_user(request):
         form = CustomUserCreationForm()
     
     return render(request, 'app/users/create_user.html', {'form': form})
+
+
+
+@login_required(login_url='login')
+def software_list(request):
+    search_query = request.GET.get('search', '')
+    software_list = Software.objects.all()
+    
+    if search_query:
+        software_list = software_list.filter(
+            Q(name__icontains=search_query) |
+            Q(version__icontains=search_query) |
+            Q(software_license__icontains=search_query)
+        )
+    
+    context = {
+        'software_list': software_list,
+        'search_query': search_query
+    }
+    return render(request, 'app/software/software_list.html', context)
+
+
+@login_required(login_url='login')
+def create_software(request):
+    if request.method == 'POST':
+        form = SoftwareForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('software-list')
+    else:
+        form = SoftwareForm()
+    
+    context = {'form': form}
+    return render(request, 'app/software/create_software.html', context)
+
+
+@login_required(login_url='login')
+def delete_software(request, pk):
+    software = Software.objects.get(id=pk)
+    if request.method == 'POST':
+        software.delete()
+        return redirect('software-list')
+    return render(request, 'app/software/delete_software.html', {'obj': software})
+
+
+@login_required(login_url='login')
+def software_detail(request, pk):
+    software = get_object_or_404(Software, pk=pk)
+    all_users = User.objects.all()
+    if request.method == 'POST':
+        form = SoftwareForm(request.POST, instance=software)
+        if form.is_valid():
+            form.save()
+            return redirect('software-detail', pk=pk)
+    else:
+        form = SoftwareForm(instance=software)
+    
+    context = {
+        'software': software,
+        'form': form,
+        'all_users': all_users
+    }
+    return render(request, 'app/software/software_page.html', context)
+
+@require_POST
+@login_required(login_url='login')
+def assign_user(request, pk):
+    software = get_object_or_404(Software, pk=pk)
+    user_id = request.POST.get('user_id')
+    user = get_object_or_404(User, id=user_id)
+    software.users.add(user)
+    return JsonResponse({
+        'success': True,
+        'user': {
+            'username': user.username,
+            'email': user.email,
+            'full_name': user.get_full_name()
+        }
+    })

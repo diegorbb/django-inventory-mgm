@@ -6,7 +6,7 @@
 {% include "sidebar.html" %}
 
 <div class="p-4 sm:ml-64">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <!-- Inventory Overview Card -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center">
@@ -67,6 +67,102 @@
             </div>
         </div>
     </div>
-</div>
 
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{% url 'create-item' %}" class="inline-flex items-center justify-center p-4 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Item
+                </a>
+                <a href="{% url 'create-incident' %}" class="inline-flex items-center justify-center p-4 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Report Incident
+                </a>
+            </div>
+        </div>
+
+        <!-- Status Overview -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Status</h2>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Database Status</span>
+                    <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                        Operational
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Last Backup</span>
+                    <span class="text-sm text-gray-900 dark:text-white">Today, 03:00 AM</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Recent Incidents -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Incidents</h2>
+                <a href="{% url 'incidents' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+            </div>
+            <div class="space-y-4">
+                {% for incident in recent_incidents %}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="w-2 h-2 rounded-full {% if incident.status == 'Open' %}bg-red-500{% elif incident.status == 'Pending' %}bg-yellow-500{% else %}bg-green-500{% endif %} mr-2"></span>
+                        <span class="text-sm text-gray-900 dark:text-white">{{ incident.subject }}</span>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ incident.created|timesince }} ago</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Low Stock Items -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Items</h2>
+                <a href="{% url 'inventory' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+            </div>
+            <div class="space-y-4">
+                {% for item in low_stock_items_list %}
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-900 dark:text-white">{{ item.name }}</span>
+                    <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                        {{ item.qty }}/{{ item.min_qty }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Software info -->
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Software List</h2>
+                <a href="{% url 'software-list' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+            </div>
+            <div class="space-y-4">
+                {% for item in software_data %}
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-900 dark:text-white">{{ item.name }}</span>
+                    <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-dark-100 text-dark-800 dark:bg-dark-900 dark:text-dark-300">
+                        {{ item.license_count}}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

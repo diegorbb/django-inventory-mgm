@@ -81,6 +81,19 @@ class UserProfile(models.Model):
         return f"{self.user.username}'s profile"
 
 
+class Software(models.Model):
+    name = models.CharField(max_length=200)
+    version = models.CharField(max_length=50)
+    software_license = models.CharField(max_length=50)
+    license_count = models.PositiveIntegerField()
+    updated = models.DateTimeField(auto_now=True)
+    # updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    users = models.ManyToManyField(User, related_name='software')
+
+    def __str__(self):
+        return self.name
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-from .models import Item, Incident, Comment, UserProfile
+from .models import Item, Incident, Comment, UserProfile, Software
 from django.contrib.auth.models import User
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -29,6 +29,12 @@ class CommentForm(ModelForm):
                 'rows': '3'
             })
         }
+
+
+class SoftwareForm(ModelForm):
+    class Meta:
+        model = Software
+        fields = ['name', 'version', 'software_license', 'license_count']
 
 
 class UserUpdateForm(forms.ModelForm):
