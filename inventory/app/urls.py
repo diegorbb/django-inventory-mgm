@@ -30,4 +30,9 @@ urlpatterns = [
     path('software/<int:pk>/assign-user/', views.assign_user, name='assign-user'),
     # path('software/edit/<int:id>/', views.edit_software, name='edit-software'),
     path('software/delete/<int:pk>/', views.delete_software, name='delete-software'),
+
+    path('assets/', views.asset_list, name='assets'),
+    path('assets/create/', views.create_asset, name='create-asset'),
+    path('assets/delete/<int:pk>/', views.delete_asset, name='delete-asset'),
+    path('assets/edit/<int:id>/', views.edit_asset, name='edit-asset'),
 ]

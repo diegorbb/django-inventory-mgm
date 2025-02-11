@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-from .models import Item, Incident, Comment, UserProfile, Software
+from .models import Item, Incident, Comment, UserProfile, Software, Asset
 from django.contrib.auth.models import User
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -34,7 +34,14 @@ class CommentForm(ModelForm):
 class SoftwareForm(ModelForm):
     class Meta:
         model = Software
-        fields = ['name', 'version', 'software_license', 'license_count']
+        fields = "__all__"
+        exclude = ['created', 'assigned_to']
+
+
+class AssetForm(forms.ModelForm):
+    class Meta:
+        model = Asset
+        fields = ['name', 'tag', 'model', 'hardware', 'serial', 'purchase_date', 'warranty', 'status', 'assigned_to', 'location']
 
 
 class UserUpdateForm(forms.ModelForm):

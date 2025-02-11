@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+
+def default_warranty_date():
+    return timezone.now() + timezone.timedelta(days=365)
 
 
 class Item(models.Model):
@@ -16,6 +20,23 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Asset(models.Model):
+    name = models.CharField(max_length=200)
+    tag = models.CharField(max_length=50)
+    model = models.CharField(max_length=50, default=None)
+    hardware = models.CharField(max_length=50, default=None)
+    serial = models.CharField(max_length=50, default=None)
+    purchase_date = models.DateField(default=timezone.now)
+    warranty = models.DateField(default=default_warranty_date) 
+    status = models.CharField(max_length=10, choices=[('Active', 'Active'), ('Inactive', 'Inactive')], default='Active')
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    location = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return self.name
+
     
     
 class Incident(models.Model):

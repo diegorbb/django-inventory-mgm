@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
-from .models import Item, Incident, Comment, Software
-from .forms import ItemForm, IncidentForm, CommentForm, UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm, SoftwareForm
+from .models import Item, Incident, Comment, Software, Asset
+from .forms import ItemForm, IncidentForm, CommentForm, UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm, SoftwareForm, AssetForm
 from django.contrib.admin.views.decorators import staff_member_required
 import random
 import string
@@ -135,8 +135,6 @@ def createIncident(request):
 def editIncident(request, pk):
     incident = Incident.objects.get(id=pk)
 
-    
-    # Check if user is incident owner
     if request.user != incident.requester:
         messages.error(request, 'You are not authorized to edit this incident.')
         return redirect('incident', pk=pk)
@@ -223,7 +221,7 @@ def deleteItem(request, pk):
 
 
 @login_required(login_url='login')
-def add_comment(request, pk):  # Changed from incident_id to pk
+def add_comment(request, pk):
     incident = Incident.objects.get(id=pk)
     if request.method == 'POST':
         content = request.POST.get('content')
@@ -232,16 +230,15 @@ def add_comment(request, pk):  # Changed from incident_id to pk
             author=request.user,
             content=content
         )
-        return redirect('incident', pk=pk)  # Updated to use pk
+        return redirect('incident', pk=pk)
     return redirect('incident', pk=pk)
 
 
 @login_required(login_url='login')
-def delete_comment(request, pk, comment_id):  # Match URL parameters
+def delete_comment(request, pk, comment_id):
     comment = Comment.objects.get(id=comment_id)
     incident_id = comment.incident.id
     
-    # Check if user is comment owner
     if request.user != comment.author:
         messages.error(request, 'You are not authorized to delete this comment.')
         return redirect('incident', pk=incident_id)
@@ -298,7 +295,56 @@ def create_user(request):
     
     return render(request, 'app/users/create_user.html', {'form': form})
 
+@login_required(login_url='login')
+def asset_list(request):
+    search_query = request.GET.get('search', '')
+    assets = Asset.objects.all()
+    
+    if search_query:
+        assets = assets.filter(
+            Q(name__icontains=search_query) |
+            Q(tag__icontains=search_query) |
+            Q(location__icontains=search_query)
+        )
+    
+    context = {
+        'assets': assets,
+        'search_query': search_query
+    }
+    return render(request, 'app/assets/asset_list.html', context)
 
+@login_required(login_url='login')
+def create_asset(request):
+    if request.method == 'POST':
+        form = AssetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('assets')
+    else:
+        form = AssetForm()
+    
+    context = {'form': form}
+    return render(request, 'app/assets/create_asset.html', context)
+
+@login_required(login_url='login')
+def delete_asset(request, pk):
+    asset = Asset.objects.get(id=pk)
+    if request.method == 'POST':
+        asset.delete()
+        return redirect('assets')
+    return render(request, 'app/assets/delete_asset.html', {'obj': asset})
+
+@login_required(login_url='login')
+def edit_asset(request, id):
+    asset = Asset.objects.get(id=id)
+    form = AssetForm(instance=asset)
+    if request.method == 'POST':
+        form = AssetForm(request.POST, instance=asset)
+        if form.is_valid():
+            form.save()
+            return redirect('assets')
+    context = {'form': form}
+    return render(request, 'app/assets/edit_asset.html', context)
 
 @login_required(login_url='login')
 def software_list(request):
