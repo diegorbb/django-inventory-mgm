@@ -17,4 +17,6 @@ To create a superuser, change directory to inventory and run: `python3 manage.py
 
 ## Run the project
 
+Run: `python3 manage.py makemigrations` & `python3 manage.py migrate`
+
 Once you have all the libraries installed and a superuser, cd into `inventory` and run `python3 manage.py runserver`
