@@ -41,24 +41,24 @@ class Asset(models.Model):
     
 class Incident(models.Model):
     STATUS_CHOICES = (
-        ("Open", "O"),
-        ("Pending", "P"),
-        ("Closed", "C"),
-        ("Resolved", "R"),
+        ("O", "Open"),
+        ("P", "Pending"),
+        ("C", "Closed"),
+        ("R", "Resolved"),
         ("NA", "NA"),
     )
 
     PRIORITY_CHOICES = (
-        ("Low", "L"),
-        ("Medium", "M"),
-        ("High", "H"),
-        ("Urgent", "U"),
+        ("L", "Low"),
+        ("M", "Medium"),
+        ("H", "High"),
+        ("U", "Urgent"),
     )
 
     requester = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     subject = models.CharField(max_length=100)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Open')
-    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='Low')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='O')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='L')
     description = models.TextField()
     created = models.DateField(auto_now_add=True)
 

@@ -78,7 +78,7 @@ def incidentPage(request):
     
     # Filter by status
     if status_filter == 'active':
-        incidents = incidents.exclude(status='Resolved')
+        incidents = incidents.exclude(status__in=['R', 'C'])
     elif status_filter != 'all':
         incidents = incidents.filter(status=status_filter)
     
@@ -122,7 +122,7 @@ def createIncident(request):
         if form.is_valid():
             incident = form.save(commit=False)
             incident.requester = request.user
-            form.save()
+            incident.save()
             return redirect('incidents')
     else:
         form = IncidentForm()
@@ -159,22 +159,18 @@ def loginPage(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        try:
-            user = User.objects.get(username=username)
-        except:
-            messages.error(request, 'Incorrect user or password, try again!')
-
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
             return redirect('dashboard')
         else:
-            messages.error(request, 'User does not exist.')
+            messages.error(request, 'Incorrect username or password, please try again.')
     return render(request, 'app/login.html')
 
 
 @login_required(login_url='login')
+@require_POST
 def logoutUser(request):
     logout(request)
     return redirect('login')
@@ -187,7 +183,9 @@ def createItem(request):
     if request.method == 'POST':
         form = ItemForm(request.POST)
         if form.is_valid():
-            form.save()
+            item = form.save(commit=False)
+            item.updated_by = request.user
+            item.save()
             return redirect('inventory')
     
     context = {'form': form}

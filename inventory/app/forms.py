@@ -7,8 +7,8 @@ from django.contrib.auth.forms import UserCreationForm
 
 class ItemForm(ModelForm):
     class Meta:
-        model = Item 
-        fields = "__all__"
+        model = Item
+        fields = ['name', 'description', 'location', 'min_qty', 'qty']
 
 
 class IncidentForm(ModelForm):
