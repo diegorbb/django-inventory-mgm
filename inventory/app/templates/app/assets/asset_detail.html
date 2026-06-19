@@ -1,0 +1,106 @@
+{% extends "main.html" %}
+{% block title %}{{ asset.name }} — InvMgm{% endblock %}
+{% block content %}
+<div class="p-6">
+    <div class="page-header">
+        <div>
+            <a href="{% url 'assets' %}" class="text-xs" style="color:#555;text-decoration:none;">← Assets</a>
+            <h1 class="page-title" style="margin-top:6px;">{{ asset.name }}</h1>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'edit-asset' asset.id %}" class="btn-ghost">Edit</a>
+            <a href="{% url 'delete-asset' asset.id %}" class="btn-ghost" style="color:#ef4444;border-color:#991b1b44;">Delete</a>
+        </div>
+    </div>
+
+    <div class="grid gap-4" style="grid-template-columns:1fr 1fr;max-width:900px;">
+        <!-- Details -->
+        <div class="card p-5">
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Hardware details</p>
+            <dl style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                    <dt class="form-label">Asset tag</dt>
+                    <dd style="font-size:13px;color:#ccc;font-family:monospace;">{{ asset.tag }}</dd>
+                </div>
+                <div>
+                    <dt class="form-label">Status</dt>
+                    <dd>
+                        {% if asset.status == 'Active' %}<span class="badge badge-active">Active</span>
+                        {% else %}<span class="badge badge-inactive">Inactive</span>{% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="form-label">Model</dt>
+                    <dd style="font-size:13px;color:#ccc;">{{ asset.model }}</dd>
+                </div>
+                <div>
+                    <dt class="form-label">Hardware type</dt>
+                    <dd style="font-size:13px;color:#ccc;">{{ asset.hardware }}</dd>
+                </div>
+                <div>
+                    <dt class="form-label">Serial number</dt>
+                    <dd style="font-size:13px;color:#ccc;font-family:monospace;">{{ asset.serial }}</dd>
+                </div>
+                <div>
+                    <dt class="form-label">Location</dt>
+                    <dd style="font-size:13px;color:#ccc;">{{ asset.location }}</dd>
+                </div>
+                <div>
+                    <dt class="form-label">Purchase date</dt>
+                    <dd style="font-size:13px;color:#ccc;">{{ asset.purchase_date|date:"M d, Y" }}</dd>
+                </div>
+                <div>
+                    <dt class="form-label">Warranty expiry</dt>
+                    <dd style="font-size:13px;{% if asset.warranty < today %}color:#ef4444;{% else %}color:#ccc;{% endif %}">
+                        {{ asset.warranty|date:"M d, Y" }}
+                        {% if asset.warranty < today %}<span style="font-size:11px;margin-left:6px;">(expired)</span>{% endif %}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Assignment -->
+        <div class="card p-5">
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Assignment</p>
+
+            {% if asset.assigned_to %}
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:#0a0a0a;border-radius:6px;border:1px solid #2a2a2a;margin-bottom:16px;">
+                <div style="width:32px;height:32px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#888;flex-shrink:0;">{{ asset.assigned_to.username|first|upper }}</div>
+                <div>
+                    <div style="font-size:13px;font-weight:500;color:#ccc;">{{ asset.assigned_to.username }}</div>
+                    <div style="font-size:11px;color:#555;">{{ asset.assigned_to.email|default:"no email" }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div style="padding:12px;background:#0a0a0a;border-radius:6px;border:1px solid #2a2a2a;margin-bottom:16px;font-size:13px;color:#555;">
+                Unassigned
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'edit-asset' asset.id %}">
+                {% csrf_token %}
+                <!-- Pass through all existing values -->
+                <input type="hidden" name="name" value="{{ asset.name }}">
+                <input type="hidden" name="tag" value="{{ asset.tag }}">
+                <input type="hidden" name="model" value="{{ asset.model }}">
+                <input type="hidden" name="hardware" value="{{ asset.hardware }}">
+                <input type="hidden" name="serial" value="{{ asset.serial }}">
+                <input type="hidden" name="purchase_date" value="{{ asset.purchase_date|date:'Y-m-d' }}">
+                <input type="hidden" name="warranty" value="{{ asset.warranty|date:'Y-m-d' }}">
+                <input type="hidden" name="status" value="{{ asset.status }}">
+                <input type="hidden" name="location" value="{{ asset.location }}">
+                <div class="form-group">
+                    <label class="form-label">Assign to</label>
+                    <select name="assigned_to" class="input-base">
+                        <option value="">— Unassigned —</option>
+                        {% for u in all_users %}
+                        <option value="{{ u.id }}" {% if asset.assigned_to and asset.assigned_to.id == u.id %}selected{% endif %}>{{ u.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">Save assignment</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

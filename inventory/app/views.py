@@ -312,7 +312,15 @@ def asset_list(request):
     return render(request, 'app/assets/asset_list.html', context)
 
 @login_required(login_url='login')
-def create_asset(request):
+@login_required(login_url='login')
+def asset_detail(request, pk):
+    asset = Asset.objects.get(id=pk)
+    all_users = User.objects.filter(is_active=True).order_by('username')
+    context = {'asset': asset, 'all_users': all_users, 'today': timezone.now().date()}
+    return render(request, 'app/assets/asset_detail.html', context)
+
+
+
     if request.method == 'POST':
         form = AssetForm(request.POST)
         if form.is_valid():
