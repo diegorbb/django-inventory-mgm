@@ -333,6 +333,18 @@ def asset_detail(request, pk):
     return render(request, 'app/assets/create_asset.html', context)
 
 @login_required(login_url='login')
+@login_required(login_url='login')
+def create_asset(request):
+    if request.method == 'POST':
+        form = AssetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('assets')
+    else:
+        form = AssetForm()
+    return render(request, 'app/assets/create_asset.html', {'form': form})
+
+
 def delete_asset(request, pk):
     asset = Asset.objects.get(id=pk)
     if request.method == 'POST':
