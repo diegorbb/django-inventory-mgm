@@ -1,38 +1,22 @@
 {% extends "main.html" %}
-
+{% block title %}Delete Item — InvMgm{% endblock %}
 {% block content %}
-
-
-{% include "sidebar.html" %}
-
-<div class="flex justify-center items-center h-screen">
-    <div class="w-full sm:max-w-md p-4">
-        <div class="relative overflow-x-auto">
-            <form class="form" method="POST">
-                {% csrf_token %}
-                <div class="relative p-4 w-full max-w-md max-h-full">
-                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                        <div class="p-4 md:p-5 text-center">
-                            <div class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300" role="alert">
-                                <span class="font-medium">Warning!</span> This action cannot be undone.
-                            </div>
-                            <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                            </svg>
-                            <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete {{obj}}?</h3>
-                            <button data-modal-hide="popup-modal" type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
-                                Yes, I'm sure
-                            </button>
-                            <a data-modal-hide="popup-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700" href="{{request.META.HTTP_REFERER}}">No, cancel</a>
-                        </div>
-                    </div>
-                </div>
-            </form>
+<div class="p-6" style="max-width:440px;">
+    <div class="card p-6" style="border-color:#991b1b44;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:36px;height:36px;background:#1f0909;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </div>
+            <div>
+                <div style="font-size:15px;font-weight:600;color:#e5e5e5;">Delete "{{ obj }}"?</div>
+                <div style="font-size:13px;color:#555;margin-top:2px;">This cannot be undone.</div>
+            </div>
         </div>
+        <form method="POST" style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid #2a2a2a;">
+            {% csrf_token %}
+            <a href="{% url 'inventory' %}" class="btn-ghost">Cancel</a>
+            <button type="submit" class="btn-danger">Delete item</button>
+        </form>
     </div>
 </div>
-
-
-{% endblock content %}
-
-
+{% endblock %}

@@ -1,163 +1,98 @@
-<!-- templates/app/dashboard.html -->
 {% extends "main.html" %}
-
+{% block title %}Dashboard — InvMgm{% endblock %}
 {% block content %}
-{% include "sidebar.html" %}
-
-<div class="p-4 sm:ml-64">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <!-- Inventory Overview Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Total Items</h2>
-                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ total_items }}</p>
-                </div>
-            </div>
+<div class="p-6">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">System overview</p>
         </div>
-
-        <!-- Low Stock Alert Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-red-100 dark:bg-red-900">
-                    <svg class="w-6 h-6 text-red-600 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Items</h2>
-                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ low_stock_items }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total Incidents Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
-                    <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Total Incidents</h2>
-                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ total_incidents }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Open Incidents Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 dark:bg-green-900">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Open Incidents</h2>
-                    <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ open_incidents }}</p>
-                </div>
-            </div>
+        <div class="flex gap-2">
+            <a href="{% url 'create-item' %}" class="btn-ghost">+ Add item</a>
+            <a href="{% url 'create-incident' %}" class="btn-primary">+ New incident</a>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <a href="{% url 'create-item' %}" class="inline-flex items-center justify-center p-4 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Add Item
-                </a>
-                <a href="{% url 'create-incident' %}" class="inline-flex items-center justify-center p-4 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 dark:text-white dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Report Incident
-                </a>
-            </div>
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 gap-4 mb-6" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_items }}</div>
+            <div class="stat-label">Total items</div>
         </div>
-
-        <!-- Status Overview -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Status</h2>
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">Database Status</span>
-                    <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                        Operational
-                    </span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600 dark:text-gray-400">Last Backup</span>
-                    <span class="text-sm text-gray-900 dark:text-white">Today, 03:00 AM</span>
-                </div>
-            </div>
+        <div class="stat-card" style="{% if low_stock_items > 0 %}border-color:#991b1b44;{% endif %}">
+            <div class="stat-value" style="{% if low_stock_items > 0 %}color:#ef4444;{% endif %}">{{ low_stock_items }}</div>
+            <div class="stat-label">Low stock</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_incidents }}</div>
+            <div class="stat-label">Total incidents</div>
+        </div>
+        <div class="stat-card" style="{% if open_incidents > 0 %}border-color:#92400e44;{% endif %}">
+            <div class="stat-value" style="{% if open_incidents > 0 %}color:#f59e0b;{% endif %}">{{ open_incidents }}</div>
+            <div class="stat-label">Open incidents</div>
         </div>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Content grid -->
+    <div class="grid gap-4" style="grid-template-columns:1fr 1fr;">
         <!-- Recent Incidents -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Incidents</h2>
-                <a href="{% url 'incidents' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+        <div class="card">
+            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:#2a2a2a;">
+                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Recent Incidents</span>
+                <a href="{% url 'incidents' %}" class="text-xs" style="color:#3b82f6;">View all →</a>
             </div>
-            <div class="space-y-4">
+            <div class="divide-y" style="border-color:#1a1a1a;">
                 {% for incident in recent_incidents %}
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <span class="w-2 h-2 rounded-full {% if incident.status == 'Open' %}bg-red-500{% elif incident.status == 'Pending' %}bg-yellow-500{% else %}bg-green-500{% endif %} mr-2"></span>
-                        <span class="text-sm text-gray-900 dark:text-white">{{ incident.subject }}</span>
+                <div class="flex items-center justify-between px-4 py-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:{% if incident.status == 'O' %}#22c55e{% elif incident.status == 'P' %}#f59e0b{% else %}#444{% endif %};"></span>
+                        <a href="{% url 'incident' incident.id %}" class="text-sm truncate" style="color:#ccc;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#ccc'">{{ incident.subject }}</a>
                     </div>
-                    <span class="text-xs text-gray-500">{{ incident.created|timesince }} ago</span>
+                    <span class="text-xs flex-shrink-0 ml-4" style="color:#555;">{{ incident.created|timesince }} ago</span>
+                </div>
+                {% empty %}
+                <div class="empty-state" style="padding:32px;">
+                    <p>No incidents yet</p>
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Low Stock Items -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Items</h2>
-                <a href="{% url 'inventory' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+        <!-- Low Stock -->
+        <div class="card">
+            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:#2a2a2a;">
+                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Low Stock Items</span>
+                <a href="{% url 'inventory' %}" class="text-xs" style="color:#3b82f6;">View all →</a>
             </div>
-            <div class="space-y-4">
+            <div class="divide-y" style="border-color:#1a1a1a;">
                 {% for item in low_stock_items_list %}
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-900 dark:text-white">{{ item.name }}</span>
-                    <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                        {{ item.qty }}/{{ item.min_qty }}
-                    </span>
+                <div class="flex items-center justify-between px-4 py-3">
+                    <span class="text-sm" style="color:#ccc;">{{ item.name }}</span>
+                    <span class="badge badge-high">{{ item.qty }} / {{ item.min_qty }}</span>
+                </div>
+                {% empty %}
+                <div class="empty-state" style="padding:32px;">
+                    <p>All stock levels healthy</p>
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Software info -->
-
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Software List</h2>
-                <a href="{% url 'software-list' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</a>
+        <!-- Software -->
+        <div class="card" style="grid-column:1/-1;">
+            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:#2a2a2a;">
+                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Software Licenses</span>
+                <a href="{% url 'software-list' %}" class="text-xs" style="color:#3b82f6;">View all →</a>
             </div>
-            <div class="space-y-4">
+            <div class="grid" style="grid-template-columns:repeat(4,1fr);">
                 {% for item in software_data %}
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-900 dark:text-white">{{ item.name }}</span>
-                    <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-dark-100 text-dark-800 dark:bg-dark-900 dark:text-dark-300">
-                        {{ item.license_count}}
-                    </span>
+                <a href="{% url 'software-detail' item.id %}" class="px-4 py-3 border-r border-b" style="border-color:#1a1a1a;text-decoration:none;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='transparent'">
+                    <div class="text-sm font-medium" style="color:#ccc;">{{ item.name }}</div>
+                    <div class="text-xs mt-1" style="color:#555;">{{ item.license_count }} license{{ item.license_count|pluralize }}</div>
+                </a>
+                {% empty %}
+                <div class="empty-state" style="grid-column:1/-1;padding:32px;">
+                    <p>No software tracked yet</p>
                 </div>
                 {% endfor %}
             </div>

@@ -1,100 +1,78 @@
 {% extends "main.html" %}
-
+{% block title %}Create User — InvMgm{% endblock %}
 {% block content %}
-{% include "sidebar.html" %}
-
-<div class="p-4 sm:ml-64">
-    <div class="max-w-2xl mx-auto py-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div class="p-6">
-                <h2 class="text-xl font-medium text-gray-900 dark:text-white mb-6">Create New User</h2>
-                
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="space-y-6">
-                        {% for field in form %}
-                        {% if field.name != 'password1' and field.name != 'password2' %}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                            <p class="mt-2 text-sm text-red-600">{{ field.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-
-                    <div class="relative mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                        <div class="relative">
-                            {{ form.password1 }}
-                            <button type="button" 
-                                    onclick="togglePassword('id_password1')"
-                                    class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="relative mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
-                        <div class="relative">
-                            {{ form.password2 }}
-                            <button type="button" 
-                                    onclick="togglePassword('id_password2')"
-                                    class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 mb-4">
-                        <button type="button" 
-                                onclick="generatePassword()"
-                                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
-                            Generate Secure Password
-                        </button>
-                    </div>
-
-                    <div class="mt-6">
-                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Create User
-                        </button>
-                        <a href="{% url 'users' %}" class="ml-3 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Cancel
-                        </a>
-                    </div>
-                </form>
-            </div>
+<div class="p-6" style="max-width:560px;">
+    <div class="page-header">
+        <div>
+            <a href="{% url 'users' %}" class="text-xs" style="color:#555;text-decoration:none;">← Users</a>
+            <h1 class="page-title" style="margin-top:6px;">Create user</h1>
         </div>
     </div>
+    <div class="card p-5">
+        {% if messages %}
+        {% for message in messages %}
+        <div style="background:{% if 'success' in message.tags %}#061a0e;border-color:#15803d44;color:#22c55e;{% else %}#1f0909;border-color:#991b1b44;color:#ef4444;{% endif %}border:1px solid;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:16px;">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="grid gap-4" style="grid-template-columns:1fr 1fr;">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="input-base" required>
+                    {% if form.username.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.username.errors.0 }}</p>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="input-base">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">First name</label>
+                    <input type="text" name="first_name" class="input-base">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last name</label>
+                    <input type="text" name="last_name" class="input-base">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div style="position:relative;">
+                    <input type="password" id="pw1" name="password1" class="input-base" style="padding-right:40px;" required>
+                    <button type="button" onclick="togglePw('pw1')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#555;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+                {% if form.password1.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.password1.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm password</label>
+                <div style="position:relative;">
+                    <input type="password" id="pw2" name="password2" class="input-base" style="padding-right:40px;" required>
+                    <button type="button" onclick="togglePw('pw2')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#555;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+                {% if form.password2.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.password2.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="form-group">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input type="checkbox" name="is_staff" style="accent-color:#3b82f6;">
+                    <span class="form-label" style="margin:0;">Staff / admin access</span>
+                </label>
+            </div>
+            <div style="margin-bottom:16px;">
+                <button type="button" onclick="generatePw()" class="btn-ghost" style="font-size:12px;">Generate secure password</button>
+            </div>
+            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+                <a href="{% url 'users' %}" class="btn-ghost">Cancel</a>
+                <button type="submit" class="btn-primary">Create user</button>
+            </div>
+        </form>
+    </div>
 </div>
-
 <script>
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    field.type = field.type === 'password' ? 'text' : 'password';
-}
-
-function generatePassword() {
-    const length = 12;
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
-    let password = "";
-    for (let i = 0; i < length; i++) {
-        password += charset.charAt(Math.floor(Math.random() * charset.length));
-    }
-    
-    // Set both password fields
-    document.getElementById('id_password1').value = password;
-    document.getElementById('id_password2').value = password;
-}
+function togglePw(id){var f=document.getElementById(id);f.type=f.type==='password'?'text':'password';}
+function generatePw(){var c='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*',p='';for(var i=0;i<14;i++)p+=c[Math.floor(Math.random()*c.length)];document.getElementById('pw1').value=p;document.getElementById('pw2').value=p;}
 </script>
-
 {% endblock %}

@@ -1,88 +1,43 @@
 {% extends "main.html" %}
-
+{% block title %}Edit Item — InvMgm{% endblock %}
 {% block content %}
-
-
-{% include "sidebar.html" %}
-
-<div class="p-4 sm:ml-64">
-    <div class="max-w-2xl mx-auto py-8">
-        <!-- Breadcrumb -->
-        <nav class="flex mb-8" aria-label="Breadcrumb">
-            <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                <li class="inline-flex items-center">
-                    <a href="{% url 'inventory' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
-                        <svg class="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
-                        </svg>
-                        Inventory
-                    </a>
-                </li>
-                <li aria-current="page">
-                    <div class="flex items-center">
-                        <svg class="w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-                        </svg>
-                        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Edit Item</span>
-                    </div>
-                </li>
-            </ol>
-        </nav>
-
-        <!-- Form Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div class="p-6">
-                <h2 class="text-xl font-medium text-gray-900 dark:text-white mb-6">Edit Item Details</h2>
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="space-y-6">
-                        <div>
-                            <label for="id_name" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Name</label>
-                            <input type="text" id="id_name" name="name" value="{{ form.instance.name }}" 
-                                class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
-                        </div>
-
-                        <div>
-                            <label for="id_description" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Description</label>
-                            <textarea id="id_description" name="description" rows="3" 
-                                class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">{{ form.instance.description }}</textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <div>
-                                <label for="id_location" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Location</label>
-                                <input type="text" id="id_location" name="location" value="{{ form.instance.location }}" 
-                                    class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
-                            </div>
-
-                            <div>
-                                <label for="id_min_qty" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Minimum Quantity</label>
-                                <input type="number" id="id_min_qty" name="min_qty" value="{{ form.instance.min_qty }}" 
-                                    class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="id_qty" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Current Quantity</label>
-                            <input type="number" id="id_qty" name="qty" value="{{ form.instance.qty }}" 
-                                class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
-                        </div>
-                    </div>
-
-                    <div class="mt-8 flex justify-end space-x-3">
-                        <a href="{{request.META.HTTP_REFERER}}" 
-                            class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700">
-                            Cancel
-                        </a>
-                        <button type="submit" 
-                            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                            Save Changes
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div class="p-6" style="max-width:600px;">
+    <div class="page-header">
+        <div>
+            <a href="{% url 'inventory' %}" class="text-xs" style="color:#555;text-decoration:none;">← Inventory</a>
+            <h1 class="page-title" style="margin-top:6px;">Edit item</h1>
         </div>
     </div>
+    <div class="card p-5">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" value="{{ form.instance.name }}" class="input-base" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="input-base" rows="3">{{ form.instance.description }}</textarea>
+            </div>
+            <div class="grid gap-4" style="grid-template-columns:1fr 1fr;">
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" name="location" value="{{ form.instance.location }}" class="input-base" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Min Quantity</label>
+                    <input type="number" name="min_qty" value="{{ form.instance.min_qty }}" class="input-base" min="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Current Quantity</label>
+                <input type="number" name="qty" value="{{ form.instance.qty }}" class="input-base" min="0" required>
+            </div>
+            <div class="flex justify-end gap-3 mt-6" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+                <a href="{% url 'inventory' %}" class="btn-ghost">Cancel</a>
+                <button type="submit" class="btn-primary">Save changes</button>
+            </div>
+        </form>
+    </div>
 </div>
-
 {% endblock %}

@@ -1,297 +1,126 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 {% extends "main.html" %}
-
+{% block title %}{{ incident.subject }} — InvMgm{% endblock %}
 {% block content %}
 
-
 {% if messages %}
-    {% for message in messages %}
-    <div id="alert-message" class="fixed bottom-4 right-4 z-50 transition-opacity duration-500">
-        <div class="{% if message.tags == 'success' %}bg-green-100 text-green-700 border-green-400{% elif message.tags == 'error' %}bg-red-100 text-red-700 border-red-400{% endif %} px-4 py-3 rounded relative border" role="alert">
-            <span class="block sm:inline">{{ message }}</span>
-        </div>
-    </div>
-    {% endfor %}
-
-    <script>
-        setTimeout(function() {
-            const alert = document.getElementById('alert-message');
-            alert.style.opacity = '0';
-            setTimeout(function() {
-                alert.remove();
-            }, 500);
-        }, 5000);
-    </script>
+{% for message in messages %}
+<div id="alert-msg" class="fixed bottom-4 right-4 z-50" style="background:{% if 'success' in message.tags %}#061a0e;border-color:#15803d44;color:#22c55e;{% else %}#1f0909;border-color:#991b1b44;color:#ef4444;{% endif %}border:1px solid;border-radius:6px;padding:10px 14px;font-size:13px;">{{ message }}</div>
+<script>setTimeout(function(){var a=document.getElementById('alert-msg');if(a){a.style.opacity='0';a.style.transition='opacity .5s';setTimeout(function(){a.remove()},500)}},4000)</script>
+{% endfor %}
 {% endif %}
 
-{% include "sidebar.html" %}
+<div class="flex" style="min-height:calc(100vh - 48px);">
+    <!-- Main content -->
+    <div class="flex-1 p-6" style="max-width:780px;">
+        <div style="margin-bottom:20px;">
+            <a href="{% url 'incidents' %}" class="text-xs" style="color:#555;text-decoration:none;">← Incidents</a>
+        </div>
 
-<div class="flex">
-    <div class="p-4 sm:ml-64 mr-64 w-full"> <!-- Added mr-64 for sidebar space -->
-        <div class="relative overflow-x-auto">
-            <div class="max-w-4xl mx-auto px-4 pt-20 py-10">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white pb-3 border-b-2 border-green-500">
-                        {{ incident.subject }}
-                    </h1>
-                </div>
-                <div class="w-full border border-gray-200 rounded-lg dark:border-gray-700 p-6 bg-white dark:bg-gray-800">
-                    <p class="text-lg font-semibold mb-4">Description</p>
-                    <p class="text-gray-700 dark:text-gray-300">{{ incident.description }}</p>
-                </div>
-                <div class="w-full border border-gray-200 rounded-lg dark:border-gray-700 p-6 bg-white dark:bg-gray-800 mt-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Comments</h2>
-                        <span class="text-sm text-gray-500">{{ incident.comments.count }} comments</span>
+        <div class="card p-6 mb-4">
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <h1 style="font-size:20px;font-weight:600;color:#e5e5e5;margin:0;">{{ incident.subject }}</h1>
+                {% if user == incident.requester %}
+                <a href="{% url 'edit-incident' incident.id %}" class="btn-ghost" style="padding:5px 12px;font-size:12px;white-space:nowrap;">Edit</a>
+                {% endif %}
+            </div>
+            <div class="divider mb-4"></div>
+            <p style="font-size:14px;color:#aaa;line-height:1.6;white-space:pre-wrap;">{{ incident.description }}</p>
+        </div>
+
+        <!-- Comments -->
+        <div class="card">
+            <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color:#2a2a2a;">
+                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Comments</span>
+                <span class="text-xs" style="color:#555;">{{ incident.comments.count }}</span>
+            </div>
+
+            <div class="divide-y" style="border-color:#1a1a1a;">
+                {% for comment in incident.comments.all %}
+                <div class="px-5 py-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <div style="width:24px;height:24px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#888;flex-shrink:0;">{{ comment.author.username|first|upper }}</div>
+                            <span style="font-size:13px;font-weight:500;color:#ccc;">{{ comment.author.username }}</span>
+                            <span style="font-size:12px;color:#444;">{{ comment.created|timesince }} ago</span>
+                        </div>
+                        {% if user == comment.author %}
+                        <form method="POST" action="{% url 'delete-comment' incident.id comment.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none;border:none;cursor:pointer;font-size:12px;color:#555;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#555'" onclick="return confirm('Delete this comment?')">Delete</button>
+                        </form>
+                        {% endif %}
                     </div>
-
-                    <!-- Comments List -->
-                    <div class="space-y-4">
-                        {% for comment in incident.comments.all %}
-                        <div class="flex space-x-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-                            <div class="flex-shrink-0">
-                                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
-                                        {{ comment.author.username|first|upper }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="flex items-center">
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ comment.author.username }}</span>
-                                        <span class="mx-2 text-gray-500">•</span>
-                                        <span class="text-sm text-gray-500">{{ comment.created|timesince }} ago</span>
-                                    </div>
-                                    {% if user == comment.author %}
-                                    <form method="POST" action="{% url 'delete-comment' incident.id comment.id %}" class="inline">
-                                        {% csrf_token %}
-                                        <button type="submit" 
-                                                class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                                                onclick="return confirm('Are you sure you want to delete this comment?');">
-                                            Delete
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                                <p class="text-gray-700 dark:text-gray-300 prose dark:prose-invert">{{ comment.content_html|safe }}</p>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <!-- New Comment Form -->
-                    <form method="POST" action="{% url 'add-comment' incident.id %}" class="mt-6">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <div class="flex space-x-2 mb-2">
-                                <!-- Bold -->
-                                <button type="button" onclick="formatText('bold')" class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" title="Bold">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h8a4 4 0 0 0 0-8H6v8zm0 0h8a4 4 0 0 1 0 8H6v-8z"/>
-                                    </svg>
-                                </button>
-                                <!-- Italic -->
-                                <button type="button" onclick="formatText('italic')" class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" title="Italic">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4h4m-2 0v16m-8-4h12"/>
-                                    </svg>
-                                </button>
-                                <!-- Code -->
-                                <button type="button" onclick="formatText('code')" class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" title="Code">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1m-4 0V1m0 0v2m-2-2h4"/>
-                                    </svg>
-                                </button>
-                                <!-- Heading -->
-                                <button type="button" onclick="formatText('heading')" class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" title="Heading">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
-                                    </svg>
-                                </button>
-                                <!-- List -->
-                                <button type="button" onclick="formatText('list')" class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" title="Bullet List">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                                    </svg>
-                                </button>
-                                <!-- Link -->
-                                <button type="button" onclick="formatText('link')" class="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" title="Link">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <textarea
-                                id="comment"
-                                name="content"
-                                rows="3"
-                                class="block w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="Add a comment... (supports markdown)"
-                                required
-                                onkeyup="autoPreview()"
-                            ></textarea>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-300">
-                                Post Comment
-                            </button>
-                            <button type="button" onclick="togglePreview()" class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                                Toggle Preview
-                            </button>
-                        </div>
-                        <div id="preview" class="hidden mt-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700 prose dark:prose-invert max-w-none"></div>
-                    </form>
+                    <div style="font-size:14px;color:#999;line-height:1.6;padding-left:32px;">{{ comment.content_html|safe }}</div>
                 </div>
+                {% empty %}
+                <div class="empty-state" style="padding:32px;">
+                    <p>No comments yet</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Comment form -->
+            <div class="px-5 py-4 border-t" style="border-color:#2a2a2a;">
+                <form method="POST" action="{% url 'add-comment' incident.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Add comment <span style="color:#444;font-size:10px;">(markdown supported)</span></label>
+                        <textarea id="comment-input" name="content" class="input-base" rows="3" placeholder="Write a comment…" required></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="togglePreview()" class="btn-ghost" style="padding:5px 12px;font-size:12px;">Preview</button>
+                        <button type="submit" class="btn-primary" style="padding:5px 12px;font-size:12px;">Post comment</button>
+                    </div>
+                    <div id="comment-preview" class="hidden mt-3 p-4 rounded" style="background:#0a0a0a;border:1px solid #2a2a2a;font-size:14px;color:#aaa;line-height:1.6;"></div>
+                </form>
             </div>
         </div>
     </div>
-    
-    <!-- Right sidebar with responsive behavior -->
-    <aside id="right-sidebar" class="fixed top-0 right-0 z-40 w-64 h-screen pt-20 transition-transform border-l border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700">
-        <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
-            {% if user == incident.requester %}
-            <div class="mb-6">
-                <a href="{% url 'edit-incident' incident.id %}" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                    <svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="m13.835 7.578-.005.007-7.137 7.137 2.139 2.138 7.143-7.142-2.14-2.14Z"/>
-                    </svg>
-                    <span class="ml-3">Edit Incident</span>
-                </a>
-            </div>
-            {% endif %}
 
-            <!-- Incident Status Card -->
-            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Status</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">Status</span>
-                        <span class="px-2.5 py-0.5 text-xs font-medium rounded-full 
-                            {% if incident.status == 'Open' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
-                            {% elif incident.status == 'Pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
-                            {% elif incident.status == 'Closed' %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
-                            {% endif %}">
-                            {{ incident.status }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">Priority</span>
-                        <span class="px-2.5 py-0.5 text-xs font-medium rounded-full
-                            {% if incident.priority == 'High' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300
-                            {% elif incident.priority == 'Medium' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
-                            {% else %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300
-                            {% endif %}">
-                            {{ incident.priority }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Requester Information Card -->
-            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Requester</h3>
-                <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
-                            {{ incident.requester.username|first|upper }}
-                        </span>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ incident.requester.username }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ incident.requester.email }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Timestamps Card -->
-            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Timeline</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">Created</span>
-                        <span class="text-sm text-gray-900 dark:text-white">{{ incident.created|date:"M d, Y" }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">Last Updated</span>
-                        <span class="text-sm text-gray-900 dark:text-white">{{ incident.updated|date:"M d, Y" }}</span>
-                    </div>
-                </div>
+    <!-- Right panel -->
+    <aside class="border-l p-5 flex-shrink-0" style="width:220px;border-color:#2a2a2a;">
+        <div style="margin-bottom:20px;">
+            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Status</p>
+            {% if incident.status == 'O' %}<span class="badge badge-open">Open</span>
+            {% elif incident.status == 'P' %}<span class="badge badge-pending">Pending</span>
+            {% elif incident.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
+            {% elif incident.status == 'C' %}<span class="badge badge-closed">Closed</span>
+            {% else %}<span class="badge">{{ incident.get_status_display }}</span>{% endif %}
+        </div>
+        <div style="margin-bottom:20px;">
+            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Priority</p>
+            {% if incident.priority == 'H' %}<span class="badge badge-high">High</span>
+            {% elif incident.priority == 'U' %}<span class="badge badge-urgent">Urgent</span>
+            {% elif incident.priority == 'M' %}<span class="badge badge-medium">Medium</span>
+            {% else %}<span class="badge badge-low">Low</span>{% endif %}
+        </div>
+        <div class="divider mb-4"></div>
+        <div style="margin-bottom:20px;">
+            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Requester</p>
+            <div style="font-size:13px;color:#888;">{{ incident.requester.username|default:"—" }}</div>
+            {% if incident.requester.email %}<div style="font-size:11px;color:#555;margin-top:2px;">{{ incident.requester.email }}</div>{% endif %}
+        </div>
+        <div class="divider mb-4"></div>
+        <div>
+            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Timeline</p>
+            <div style="font-size:12px;color:#555;margin-bottom:6px;">
+                <span style="color:#666;">Created</span><br>{{ incident.created|date:"M d, Y" }}
             </div>
         </div>
     </aside>
 </div>
 
-<!-- Add JavaScript for toggle functionality -->
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('right-sidebar');
-    const mainContent = document.querySelector('.mr-64');
-    const toggleIcon = document.getElementById('toggle-icon');
-    
-    if (sidebar.style.transform === 'translateX(100%)') {
-        sidebar.style.transform = 'translateX(0)';
-        mainContent.classList.add('mr-64');
-        toggleIcon.style.transform = 'rotate(0deg)';
-    } else {
-        sidebar.style.transform = 'translateX(100%)';
-        mainContent.classList.remove('mr-64');
-        toggleIcon.style.transform = 'rotate(180deg)';
-    }
+function togglePreview(){
+    var p=document.getElementById('comment-preview');
+    var t=document.getElementById('comment-input');
+    p.classList.toggle('hidden');
+    if(!p.classList.contains('hidden')) p.innerHTML=marked.parse(t.value||'');
 }
-
-function formatText(style) {
-    const textarea = document.getElementById('comment');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const selectedText = text.substring(start, end);
-    
-    let formattedText;
-    switch(style) {
-        case 'bold':
-            formattedText = `**${selectedText}**`;
-            break;
-        case 'italic':
-            formattedText = `*${selectedText}*`;
-            break;
-        case 'code':
-            formattedText = `\`${selectedText}\``;
-            break;
-        case 'heading':
-            formattedText = `### ${selectedText}`;
-            break;
-        case 'list':
-            formattedText = selectedText.split('\n').map(line => `- ${line}`).join('\n');
-            break;
-        case 'link':
-            formattedText = `[${selectedText}](url)`;
-            break;
-    }
-    
-    textarea.value = text.substring(0, start) + formattedText + text.substring(end);
-    autoPreview();
-}
-
-function togglePreview() {
-    const preview = document.getElementById('preview');
-    preview.classList.toggle('hidden');
-    if (!preview.classList.contains('hidden')) {
-        updatePreview();
-    }
-}
-
-function updatePreview() {
-    const content = document.getElementById('comment').value;
-    const preview = document.getElementById('preview');
-    preview.innerHTML = marked.parse(content);
-}
-
-let previewTimeout;
-function autoPreview() {
-    clearTimeout(previewTimeout);
-    previewTimeout = setTimeout(updatePreview, 300);
-}
+document.getElementById('comment-input').addEventListener('input',function(){
+    var p=document.getElementById('comment-preview');
+    if(!p.classList.contains('hidden')) p.innerHTML=marked.parse(this.value||'');
+});
 </script>
-
 {% endblock %}

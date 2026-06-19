@@ -1,29 +1,22 @@
 {% extends "main.html" %}
-
+{% block title %}Delete Software — InvMgm{% endblock %}
 {% block content %}
-{% include "sidebar.html" %}
-
-<div class="p-4 sm:ml-64">
-    <div class="max-w-2xl mx-auto py-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div class="p-6">
-                <h2 class="text-xl font-medium text-gray-900 dark:text-white mb-6">Delete Software</h2>
-                <p class="text-gray-700 dark:text-gray-300 mb-6">Are you sure you want to delete the software "{{ obj.name }}"?</p>
-                
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="flex justify-end space-x-3">
-                        <a href="{% url 'software-list' %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
-                            Cancel
-                        </a>
-                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700">
-                            Delete
-                        </button>
-                    </div>
-                </form>
+<div class="p-6" style="max-width:440px;">
+    <div class="card p-6" style="border-color:#991b1b44;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:36px;height:36px;background:#1f0909;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </div>
+            <div>
+                <div style="font-size:15px;font-weight:600;color:#e5e5e5;">Delete "{{ obj }}"?</div>
+                <div style="font-size:13px;color:#555;margin-top:2px;">This cannot be undone.</div>
             </div>
         </div>
+        <form method="POST" style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid #2a2a2a;">
+            {% csrf_token %}
+            <a href="{% url 'software-list' %}" class="btn-ghost">Cancel</a>
+            <button type="submit" class="btn-danger">Delete</button>
+        </form>
     </div>
 </div>
-
 {% endblock %}

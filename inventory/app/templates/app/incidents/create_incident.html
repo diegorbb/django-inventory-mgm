@@ -1,75 +1,49 @@
 {% extends "main.html" %}
-
+{% block title %}New Incident — InvMgm{% endblock %}
 {% block content %}
-{% include "sidebar.html" %}
-
-<div class="p-4 sm:ml-64">
-    <div class="max-w-2xl mx-auto py-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div class="p-6">
-                <h2 class="text-xl font-medium text-gray-900 dark:text-white mb-6">Create Incident</h2>
-                
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="space-y-6">
-                        <div>
-                            <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
-                            <input type="text" 
-                                   id="subject" 
-                                   name="subject" 
-                                   class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                                   required>
-                        </div>
-
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-                            <textarea id="description" 
-                                      name="description" 
-                                      rows="4" 
-                                      class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                                      required></textarea>
-                        </div>
-
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                            <select id="status" 
-                                    name="status" 
-                                    class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
-                                <option value="Open">Open</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Closed">Closed</option>
-                                <option value="Resolved">Resolved</option>
-                                <option value="NA">NA</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
-                            <select id="priority" 
-                                    name="priority" 
-                                    class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500">
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 flex justify-end space-x-3">
-                        <a href="{% url 'incidents' %}" 
-                           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
-                            Cancel
-                        </a>
-                        <button type="submit" 
-                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700">
-                            Create Incident
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div class="p-6" style="max-width:600px;">
+    <div class="page-header">
+        <div>
+            <a href="{% url 'incidents' %}" class="text-xs" style="color:#555;text-decoration:none;">← Incidents</a>
+            <h1 class="page-title" style="margin-top:6px;">New incident</h1>
         </div>
     </div>
+    <div class="card p-5">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Subject</label>
+                <input type="text" name="subject" class="input-base" required>
+            </div>
+            <div class="grid gap-4" style="grid-template-columns:1fr 1fr;">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="input-base">
+                        <option value="O">Open</option>
+                        <option value="P">Pending</option>
+                        <option value="C">Closed</option>
+                        <option value="R">Resolved</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select name="priority" class="input-base">
+                        <option value="L">Low</option>
+                        <option value="M">Medium</option>
+                        <option value="H">High</option>
+                        <option value="U">Urgent</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="input-base" rows="5" required></textarea>
+            </div>
+            <div class="flex justify-end gap-3 mt-6" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+                <a href="{% url 'incidents' %}" class="btn-ghost">Cancel</a>
+                <button type="submit" class="btn-primary">Create incident</button>
+            </div>
+        </form>
+    </div>
 </div>
-
 {% endblock %}
