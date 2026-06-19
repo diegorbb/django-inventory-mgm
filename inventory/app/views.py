@@ -353,6 +353,7 @@ def delete_asset(request, pk):
     return render(request, 'app/assets/delete_asset.html', {'obj': asset})
 
 @login_required(login_url='login')
+@login_required(login_url='login')
 def edit_asset(request, id):
     asset = Asset.objects.get(id=id)
     form = AssetForm(instance=asset)
@@ -360,8 +361,8 @@ def edit_asset(request, id):
         form = AssetForm(request.POST, instance=asset)
         if form.is_valid():
             form.save()
-            return redirect('assets')
-    context = {'form': form}
+            return redirect('asset-detail', pk=asset.id)
+    context = {'form': form, 'asset': asset}
     return render(request, 'app/assets/edit_asset.html', context)
 
 @login_required(login_url='login')
