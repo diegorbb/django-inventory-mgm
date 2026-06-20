@@ -17,23 +17,87 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 
 @login_required(login_url='login')
+@login_required(login_url='login')
 def dashboard(request):
+    today = timezone.now().date()
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    seven_days_ago = timezone.now() - timedelta(days=7)
+
+    # --- Incidents ---
+    all_incidents = Incident.objects.all()
+    open_incidents = all_incidents.filter(status='O')
+    pending_incidents = all_incidents.filter(status='P')
+    urgent_incidents = all_incidents.filter(priority='U', status__in=['O', 'P'])
+    resolved_this_month = all_incidents.filter(status__in=['R', 'C'], created__gte=thirty_days_ago.date())
+    new_this_week = all_incidents.filter(created__gte=seven_days_ago.date())
+    recent_incidents = all_incidents.order_by('-created')[:8]
+
+    # Incident breakdown by priority (open only)
+    open_by_priority = {
+        'urgent': all_incidents.filter(status__in=['O','P'], priority='U').count(),
+        'high':   all_incidents.filter(status__in=['O','P'], priority='H').count(),
+        'medium': all_incidents.filter(status__in=['O','P'], priority='M').count(),
+        'low':    all_incidents.filter(status__in=['O','P'], priority='L').count(),
+    }
+
+    # --- Inventory ---
     total_items = Item.objects.count()
-    low_stock_items = Item.objects.filter(qty__lte=F('min_qty')).count()
-    low_stock_items_list = Item.objects.filter(qty__lte=F('min_qty'))[:5]
-    total_incidents = Incident.objects.count()
-    open_incidents = Incident.objects.filter(status='Open').count()
-    recent_incidents = Incident.objects.all().order_by('-created')[:5]
-    software_data = Software.objects.all()
-    
+    low_stock_items_list = Item.objects.filter(qty__lte=F('min_qty')).order_by('qty')[:6]
+    low_stock_count = Item.objects.filter(qty__lte=F('min_qty')).count()
+    out_of_stock_count = Item.objects.filter(qty=0).count()
+
+    # --- Assets ---
+    total_assets = Asset.objects.count()
+    active_assets = Asset.objects.filter(status='Active').count()
+    unassigned_assets = Asset.objects.filter(assigned_to__isnull=True, status='Active').count()
+    expiring_warranties = Asset.objects.filter(
+        warranty__gte=today,
+        warranty__lte=today + timedelta(days=90)
+    ).order_by('warranty')[:5]
+    expired_warranties = Asset.objects.filter(warranty__lt=today).count()
+
+    # --- Software ---
+    all_software = Software.objects.all()
+    total_licenses = sum(s.license_count for s in all_software)
+    used_licenses = sum(s.seats_used for s in all_software)
+    over_limit_software = [s for s in all_software if s.is_over_limit]
+    expiring_software = [s for s in all_software
+                         if s.expiry_date and today <= s.expiry_date <= today + timedelta(days=90)]
+    expired_software = [s for s in all_software
+                        if s.expiry_date and s.expiry_date < today]
+
+    # --- Users ---
+    total_users = User.objects.filter(is_active=True).count()
+
     context = {
-        'total_items': total_items,
-        'low_stock_items': low_stock_items,
-        'low_stock_items_list': low_stock_items_list,
-        'total_incidents': total_incidents,
-        'open_incidents': open_incidents,
+        'today': today,
+        # incidents
+        'open_incidents': open_incidents.count(),
+        'pending_incidents': pending_incidents.count(),
+        'urgent_incidents': urgent_incidents.count(),
+        'resolved_this_month': resolved_this_month.count(),
+        'new_this_week': new_this_week.count(),
         'recent_incidents': recent_incidents,
-        'software_data': software_data,
+        'open_by_priority': open_by_priority,
+        # inventory
+        'total_items': total_items,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'low_stock_items_list': low_stock_items_list,
+        # assets
+        'total_assets': total_assets,
+        'active_assets': active_assets,
+        'unassigned_assets': unassigned_assets,
+        'expiring_warranties': expiring_warranties,
+        'expired_warranties': expired_warranties,
+        # software
+        'total_licenses': total_licenses,
+        'used_licenses': used_licenses,
+        'over_limit_software': over_limit_software,
+        'expiring_software': expiring_software,
+        'expired_software': expired_software,
+        # users
+        'total_users': total_users,
     }
     return render(request, 'app/dashboard.html', context)
 

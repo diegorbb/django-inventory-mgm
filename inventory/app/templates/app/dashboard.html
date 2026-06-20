@@ -2,100 +2,221 @@
 {% block title %}Dashboard — InvMgm{% endblock %}
 {% block content %}
 <div class="p-6">
-    <div class="page-header">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;">
         <div>
-            <h1 class="page-title">Dashboard</h1>
-            <p class="page-subtitle">System overview</p>
+            <h1 style="font-size:20px;font-weight:600;color:#e5e5e5;margin:0 0 4px;">Operations Overview</h1>
+            <p style="font-size:13px;color:#555;margin:0;">{{ today|date:"l, F j, Y" }}</p>
         </div>
-        <div class="flex gap-2">
-            <a href="{% url 'create-item' %}" class="btn-ghost">+ Add item</a>
-            <a href="{% url 'create-incident' %}" class="btn-primary">+ New incident</a>
+        <div style="display:flex;gap:8px;">
+            <a href="{% url 'create-item' %}" class="btn-ghost">+ Item</a>
+            <a href="{% url 'create-incident' %}" class="btn-primary">+ Incident</a>
         </div>
     </div>
 
-    <!-- Stats row -->
-    <div class="grid grid-cols-2 gap-4 mb-6" style="grid-template-columns:repeat(4,1fr);">
-        <div class="stat-card">
-            <div class="stat-value">{{ total_items }}</div>
-            <div class="stat-label">Total items</div>
+    <!-- Alerts bar — only shown if there are issues -->
+    {% if urgent_incidents or out_of_stock_count or over_limit_software or expired_software or expired_warranties %}
+    <div style="background:#1a0a00;border:1px solid #92400e44;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#f59e0b;font-weight:500;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Attention needed
         </div>
-        <div class="stat-card" style="{% if low_stock_items > 0 %}border-color:#991b1b44;{% endif %}">
-            <div class="stat-value" style="{% if low_stock_items > 0 %}color:#ef4444;{% endif %}">{{ low_stock_items }}</div>
-            <div class="stat-label">Low stock</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ total_incidents }}</div>
-            <div class="stat-label">Total incidents</div>
-        </div>
+        <div style="width:1px;height:16px;background:#333;"></div>
+        {% if urgent_incidents %}
+        <a href="{% url 'incidents' %}?status=active" style="font-size:12px;color:#ef4444;text-decoration:none;">{{ urgent_incidents }} urgent incident{{ urgent_incidents|pluralize }}</a>
+        {% endif %}
+        {% if out_of_stock_count %}
+        <a href="{% url 'inventory' %}" style="font-size:12px;color:#ef4444;text-decoration:none;">{{ out_of_stock_count }} item{{ out_of_stock_count|pluralize }} out of stock</a>
+        {% endif %}
+        {% if over_limit_software %}
+        <a href="{% url 'software-list' %}" style="font-size:12px;color:#ef4444;text-decoration:none;">{{ over_limit_software|length }} software over seat limit</a>
+        {% endif %}
+        {% if expired_software %}
+        <a href="{% url 'software-list' %}" style="font-size:12px;color:#ef4444;text-decoration:none;">{{ expired_software|length }} expired license{{ expired_software|length|pluralize }}</a>
+        {% endif %}
+        {% if expired_warranties %}
+        <a href="{% url 'assets' %}" style="font-size:12px;color:#f59e0b;text-decoration:none;">{{ expired_warranties }} expired warrant{{ expired_warranties|pluralize:"y,ies" }}</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- KPI row -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;">
+
         <div class="stat-card" style="{% if open_incidents > 0 %}border-color:#92400e44;{% endif %}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#555;">Open incidents</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{% if open_incidents > 0 %}#f59e0b{% else %}#333{% endif %}" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            </div>
             <div class="stat-value" style="{% if open_incidents > 0 %}color:#f59e0b;{% endif %}">{{ open_incidents }}</div>
-            <div class="stat-label">Open incidents</div>
+            <div style="font-size:11px;color:#444;margin-top:6px;">{{ pending_incidents }} pending · {{ new_this_week }} new this week</div>
         </div>
+
+        <div class="stat-card" style="{% if urgent_incidents > 0 %}border-color:#991b1b44;{% endif %}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#555;">Urgent</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{% if urgent_incidents > 0 %}#ef4444{% else %}#333{% endif %}" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="stat-value" style="{% if urgent_incidents > 0 %}color:#ef4444;{% endif %}">{{ urgent_incidents }}</div>
+            <div style="font-size:11px;color:#444;margin-top:6px;">{{ resolved_this_month }} resolved this month</div>
+        </div>
+
+        <div class="stat-card" style="{% if low_stock_count > 0 %}border-color:#92400e44;{% endif %}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#555;">Inventory</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <div class="stat-value">{{ total_items }}</div>
+            <div style="font-size:11px;color:#444;margin-top:6px;">
+                {% if low_stock_count %}<span style="color:#f59e0b;">{{ low_stock_count }} low stock</span>{% if out_of_stock_count %} · {% endif %}{% endif %}
+                {% if out_of_stock_count %}<span style="color:#ef4444;">{{ out_of_stock_count }} out</span>{% endif %}
+                {% if not low_stock_count and not out_of_stock_count %}All levels healthy{% endif %}
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#555;">Assets</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="stat-value">{{ active_assets }}</div>
+            <div style="font-size:11px;color:#444;margin-top:6px;">{{ total_assets }} total · {{ unassigned_assets }} unassigned</div>
+        </div>
+
+        <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#555;">Licenses</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div class="stat-value">{{ used_licenses }}<span style="font-size:16px;color:#555;font-weight:400;">/{{ total_licenses }}</span></div>
+            <div style="font-size:11px;color:#444;margin-top:6px;">
+                {% if over_limit_software %}<span style="color:#ef4444;">{{ over_limit_software|length }} over limit</span>{% else %}All within limits{% endif %}
+            </div>
+        </div>
+
     </div>
 
-    <!-- Content grid -->
-    <div class="grid gap-4" style="grid-template-columns:1fr 1fr;">
-        <!-- Recent Incidents -->
-        <div class="card">
-            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:#2a2a2a;">
-                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Recent Incidents</span>
-                <a href="{% url 'incidents' %}" class="text-xs" style="color:#3b82f6;">View all →</a>
+    <!-- Main grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 320px;gap:16px;align-items:start;">
+
+        <!-- Incidents feed -->
+        <div class="card" style="grid-column:1/3;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2a2a2a;">
+                <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Active incidents</span>
+                <a href="{% url 'incidents' %}" style="font-size:12px;color:#3b82f6;text-decoration:none;">View all →</a>
             </div>
-            <div class="divide-y" style="border-color:#1a1a1a;">
+
+            <!-- Priority breakdown mini-bar -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #2a2a2a;">
+                <div style="padding:10px 16px;border-right:1px solid #2a2a2a;text-align:center;">
+                    <div style="font-size:18px;font-weight:600;color:{% if open_by_priority.urgent > 0 %}#f97316{% else %}#333{% endif %};">{{ open_by_priority.urgent }}</div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#555;margin-top:2px;">Urgent</div>
+                </div>
+                <div style="padding:10px 16px;border-right:1px solid #2a2a2a;text-align:center;">
+                    <div style="font-size:18px;font-weight:600;color:{% if open_by_priority.high > 0 %}#ef4444{% else %}#333{% endif %};">{{ open_by_priority.high }}</div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#555;margin-top:2px;">High</div>
+                </div>
+                <div style="padding:10px 16px;border-right:1px solid #2a2a2a;text-align:center;">
+                    <div style="font-size:18px;font-weight:600;color:{% if open_by_priority.medium > 0 %}#f59e0b{% else %}#333{% endif %};">{{ open_by_priority.medium }}</div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#555;margin-top:2px;">Medium</div>
+                </div>
+                <div style="padding:10px 16px;text-align:center;">
+                    <div style="font-size:18px;font-weight:600;color:#333;">{{ open_by_priority.low }}</div>
+                    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#555;margin-top:2px;">Low</div>
+                </div>
+            </div>
+
+            <!-- Recent incident rows -->
+            <div>
                 {% for incident in recent_incidents %}
-                <div class="flex items-center justify-between px-4 py-3">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:{% if incident.status == 'O' %}#22c55e{% elif incident.status == 'P' %}#f59e0b{% else %}#444{% endif %};"></span>
-                        <a href="{% url 'incident' incident.id %}" class="text-sm truncate" style="color:#ccc;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#ccc'">{{ incident.subject }}</a>
+                <a href="{% url 'incident' incident.id %}" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #1a1a1a;text-decoration:none;" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+                    <div style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:
+                        {% if incident.priority == 'U' %}#f97316
+                        {% elif incident.priority == 'H' %}#ef4444
+                        {% elif incident.priority == 'M' %}#f59e0b
+                        {% else %}#3b82f6{% endif %};"></div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:13px;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ incident.subject }}</div>
+                        <div style="font-size:11px;color:#555;margin-top:1px;">{{ incident.requester.username|default:"—" }} · {{ incident.created|date:"M d" }}</div>
                     </div>
-                    <span class="text-xs flex-shrink-0 ml-4" style="color:#555;">{{ incident.created|timesince }} ago</span>
-                </div>
-                {% empty %}
-                <div class="empty-state" style="padding:32px;">
-                    <p>No incidents yet</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Low Stock -->
-        <div class="card">
-            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:#2a2a2a;">
-                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Low Stock Items</span>
-                <a href="{% url 'inventory' %}" class="text-xs" style="color:#3b82f6;">View all →</a>
-            </div>
-            <div class="divide-y" style="border-color:#1a1a1a;">
-                {% for item in low_stock_items_list %}
-                <div class="flex items-center justify-between px-4 py-3">
-                    <span class="text-sm" style="color:#ccc;">{{ item.name }}</span>
-                    <span class="badge badge-high">{{ item.qty }} / {{ item.min_qty }}</span>
-                </div>
-                {% empty %}
-                <div class="empty-state" style="padding:32px;">
-                    <p>All stock levels healthy</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Software -->
-        <div class="card" style="grid-column:1/-1;">
-            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:#2a2a2a;">
-                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Software Licenses</span>
-                <a href="{% url 'software-list' %}" class="text-xs" style="color:#3b82f6;">View all →</a>
-            </div>
-            <div class="grid" style="grid-template-columns:repeat(4,1fr);">
-                {% for item in software_data %}
-                <a href="{% url 'software-detail' item.id %}" class="px-4 py-3 border-r border-b" style="border-color:#1a1a1a;text-decoration:none;" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background='transparent'">
-                    <div class="text-sm font-medium" style="color:#ccc;">{{ item.name }}</div>
-                    <div class="text-xs mt-1" style="color:#555;">{{ item.license_count }} license{{ item.license_count|pluralize }}</div>
+                    <div style="flex-shrink:0;">
+                        {% if incident.status == 'O' %}<span class="badge badge-open">Open</span>
+                        {% elif incident.status == 'P' %}<span class="badge badge-pending">Pending</span>
+                        {% elif incident.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
+                        {% else %}<span class="badge">{{ incident.get_status_display }}</span>{% endif %}
+                    </div>
                 </a>
                 {% empty %}
-                <div class="empty-state" style="grid-column:1/-1;padding:32px;">
-                    <p>No software tracked yet</p>
+                <div class="empty-state" style="padding:32px;">
+                    <p>No incidents — things are looking good</p>
                 </div>
                 {% endfor %}
             </div>
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Low stock -->
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2a2a2a;">
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Low stock</span>
+                    <a href="{% url 'inventory' %}" style="font-size:12px;color:#3b82f6;text-decoration:none;">Inventory →</a>
+                </div>
+                {% for item in low_stock_items_list %}
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid #1a1a1a;">
+                    <div style="min-width:0;">
+                        <div style="font-size:13px;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">{{ item.name }}</div>
+                        <div style="font-size:11px;color:#555;">{{ item.location }}</div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <span style="font-size:13px;font-weight:600;color:{% if item.qty == 0 %}#ef4444{% else %}#f59e0b{% endif %};">{{ item.qty }}</span>
+                        <span style="font-size:11px;color:#444;"> / {{ item.min_qty }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="padding:20px 16px;font-size:13px;color:#444;text-align:center;">All stock levels healthy</div>
+                {% endfor %}
+            </div>
+
+            <!-- Expiring warranties -->
+            {% if expiring_warranties %}
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2a2a2a;">
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Warranties expiring</span>
+                    <span style="font-size:11px;color:#f59e0b;">next 90 days</span>
+                </div>
+                {% for asset in expiring_warranties %}
+                <a href="{% url 'asset-detail' asset.id %}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid #1a1a1a;text-decoration:none;" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+                    <div style="font-size:13px;color:#ccc;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">{{ asset.name }}</div>
+                    <div style="font-size:12px;color:#f59e0b;flex-shrink:0;">{{ asset.warranty|date:"M d, Y" }}</div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Software alerts -->
+            {% if expiring_software or over_limit_software %}
+            <div class="card">
+                <div style="padding:12px 16px;border-bottom:1px solid #2a2a2a;">
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Software alerts</span>
+                </div>
+                {% for sw in over_limit_software %}
+                <a href="{% url 'software-detail' sw.id %}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid #1a1a1a;text-decoration:none;" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+                    <div style="font-size:13px;color:#ccc;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">{{ sw.name }}</div>
+                    <span class="badge badge-high">Over limit</span>
+                </a>
+                {% endfor %}
+                {% for sw in expiring_software %}
+                <a href="{% url 'software-detail' sw.id %}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid #1a1a1a;text-decoration:none;" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+                    <div style="font-size:13px;color:#ccc;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">{{ sw.name }}</div>
+                    <span class="badge badge-pending">Exp. {{ sw.expiry_date|date:"M d" }}</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
         </div>
     </div>
 </div>
