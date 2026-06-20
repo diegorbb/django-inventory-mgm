@@ -22,30 +22,45 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Publisher</th>
                     <th>Version</th>
-                    <th>License key</th>
+                    <th>Type</th>
                     <th>Seats</th>
-                    <th>In use</th>
+                    <th>Expiry</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
-                {% for software in software_list %}
+                {% for sw in software_list %}
                 <tr>
-                    <td style="color:#e5e5e5;font-weight:500;">
-                        <a href="{% url 'software-detail' software.id %}" style="color:#e5e5e5;text-decoration:none;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#e5e5e5'">{{ software.name }}</a>
-                    </td>
-                    <td style="font-family:monospace;font-size:12px;color:#888;">{{ software.version }}</td>
-                    <td style="font-family:monospace;font-size:12px;color:#888;">{{ software.software_license }}</td>
-                    <td>{{ software.license_count }}</td>
                     <td>
-                        <span style="color:{% if software.users.count >= software.license_count %}#ef4444{% else %}#aaa{% endif %};">
-                            {{ software.users.count }}
-                        </span>
+                        <a href="{% url 'software-detail' sw.id %}" style="color:#e5e5e5;font-weight:500;text-decoration:none;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#e5e5e5'">{{ sw.name }}</a>
+                        {% if sw.category %}<div style="font-size:11px;color:#555;margin-top:2px;">{{ sw.category }}</div>{% endif %}
+                    </td>
+                    <td style="color:#888;">{{ sw.publisher|default:"—" }}</td>
+                    <td style="font-family:monospace;font-size:12px;color:#888;">{{ sw.version }}</td>
+                    <td>
+                        <span class="badge" style="background:#1a1a1a;color:#888;border:1px solid #333;">{{ sw.get_license_type_display }}</span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="flex:1;max-width:80px;height:4px;background:#222;border-radius:2px;overflow:hidden;">
+                                {% if sw.license_count > 0 %}
+                                <div style="height:100%;width:{% widthratio sw.seats_used sw.license_count 100 %}%;background:{% if sw.is_over_limit %}#ef4444{% elif sw.seats_used|add:0 >= sw.license_count|add:0 %}#f59e0b{% else %}#22c55e{% endif %};border-radius:2px;transition:width .3s;"></div>
+                                {% endif %}
+                            </div>
+                            <span style="font-size:12px;color:{% if sw.is_over_limit %}#ef4444{% else %}#888{% endif %};">{{ sw.seats_used }}/{{ sw.license_count }}</span>
+                        </div>
+                    </td>
+                    <td style="font-size:12px;">
+                        {% if sw.expiry_date %}
+                            {% if sw.expiry_date < today %}<span style="color:#ef4444;">{{ sw.expiry_date|date:"M d, Y" }} <span style="font-size:11px;">(expired)</span></span>
+                            {% else %}<span style="color:#888;">{{ sw.expiry_date|date:"M d, Y" }}</span>{% endif %}
+                        {% else %}<span style="color:#444;">—</span>{% endif %}
                     </td>
                     <td style="text-align:right;">
-                        <a href="{% url 'software-detail' software.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;margin-right:6px;">View</a>
-                        <a href="{% url 'delete-software' software.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;color:#ef4444;border-color:#991b1b44;">Delete</a>
+                        <a href="{% url 'software-detail' sw.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;margin-right:6px;">View</a>
+                        <a href="{% url 'delete-software' sw.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;color:#ef4444;border-color:#991b1b44;">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

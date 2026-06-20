@@ -103,16 +103,40 @@ class UserProfile(models.Model):
 
 
 class Software(models.Model):
+    LICENSE_TYPE_CHOICES = [
+        ('perpetual', 'Perpetual'),
+        ('subscription', 'Subscription'),
+        ('oem', 'OEM'),
+        ('open_source', 'Open Source'),
+        ('freeware', 'Freeware'),
+    ]
+
     name = models.CharField(max_length=200)
+    publisher = models.CharField(max_length=200, blank=True, default='')
     version = models.CharField(max_length=50)
-    software_license = models.CharField(max_length=50)
+    category = models.CharField(max_length=100, blank=True, default='')
+    software_license = models.CharField(max_length=200, blank=True, default='')
+    license_type = models.CharField(max_length=20, choices=LICENSE_TYPE_CHOICES, default='perpetual')
     license_count = models.PositiveIntegerField()
+    expiry_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True, default='')
     updated = models.DateTimeField(auto_now=True)
-    # updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    users = models.ManyToManyField(User, related_name='software')
+    users = models.ManyToManyField(User, related_name='software', blank=True)
 
     def __str__(self):
         return self.name
+
+    @property
+    def seats_used(self):
+        return self.users.count()
+
+    @property
+    def seats_available(self):
+        return self.license_count - self.users.count()
+
+    @property
+    def is_over_limit(self):
+        return self.users.count() > self.license_count
 
 
 @receiver(post_save, sender=User)

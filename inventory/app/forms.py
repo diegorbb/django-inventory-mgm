@@ -34,8 +34,8 @@ class CommentForm(ModelForm):
 class SoftwareForm(ModelForm):
     class Meta:
         model = Software
-        fields = "__all__"
-        exclude = ['created', 'assigned_to']
+        fields = ['name', 'publisher', 'version', 'category', 'software_license',
+                  'license_type', 'license_count', 'expiry_date', 'notes']
 
 
 class AssetForm(forms.ModelForm):

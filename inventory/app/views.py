@@ -7,6 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from .models import Item, Incident, Comment, Software, Asset
 from .forms import ItemForm, IncidentForm, CommentForm, UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm, SoftwareForm, AssetForm
 from django.contrib.admin.views.decorators import staff_member_required
+import json
 import random
 import string
 from django.db.models import F, Q
@@ -366,6 +367,7 @@ def edit_asset(request, id):
     return render(request, 'app/assets/edit_asset.html', context)
 
 @login_required(login_url='login')
+@login_required(login_url='login')
 def software_list(request):
     search_query = request.GET.get('search', '')
     software_list = Software.objects.all()
@@ -379,7 +381,8 @@ def software_list(request):
     
     context = {
         'software_list': software_list,
-        'search_query': search_query
+        'search_query': search_query,
+        'today': timezone.now().date(),
     }
     return render(request, 'app/software/software_list.html', context)
 
@@ -422,7 +425,8 @@ def software_detail(request, pk):
     context = {
         'software': software,
         'form': form,
-        'all_users': all_users
+        'all_users': all_users,
+        'today': timezone.now().date(),
     }
     return render(request, 'app/software/software_page.html', context)
 
@@ -430,14 +434,25 @@ def software_detail(request, pk):
 @login_required(login_url='login')
 def assign_user(request, pk):
     software = get_object_or_404(Software, pk=pk)
-    user_id = request.POST.get('user_id')
+    try:
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+    except Exception:
+        user_id = request.POST.get('user_id')
     user = get_object_or_404(User, id=user_id)
+    if software.users.filter(id=user.id).exists():
+        return JsonResponse({'success': False, 'error': 'User already assigned'})
     software.users.add(user)
     return JsonResponse({
         'success': True,
-        'user': {
-            'username': user.username,
-            'email': user.email,
-            'full_name': user.get_full_name()
-        }
+        'user': {'id': user.id, 'username': user.username, 'email': user.email}
     })
+
+
+@require_POST
+@login_required(login_url='login')
+def remove_user(request, pk, user_id):
+    software = get_object_or_404(Software, pk=pk)
+    user = get_object_or_404(User, id=user_id)
+    software.users.remove(user)
+    return JsonResponse({'success': True})
