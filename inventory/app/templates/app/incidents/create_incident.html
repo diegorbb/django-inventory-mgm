@@ -1,28 +1,28 @@
 {% extends "main.html" %}
 {% block title %}New Incident — InvMgm{% endblock %}
 {% block content %}
-<div class="p-6" style="max-width:600px;">
-    <div class="page-header">
-        <div>
-            <a href="{% url 'incidents' %}" class="text-xs" style="color:#555;text-decoration:none;">← Incidents</a>
-            <h1 class="page-title" style="margin-top:6px;">New incident</h1>
-        </div>
+<div class="p-6" style="max-width:680px;">
+    <div style="margin-bottom:20px;">
+        <a href="{% url 'incidents' %}" class="text-xs" style="color:#555;text-decoration:none;">← Incidents</a>
+        <h1 class="page-title" style="margin-top:6px;">New incident</h1>
     </div>
+
     <div class="card p-5">
         <form method="POST">
             {% csrf_token %}
+
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Details</p>
             <div class="form-group">
                 <label class="form-label">Subject</label>
-                <input type="text" name="subject" class="input-base" required>
+                <input type="text" name="subject" class="input-base" placeholder="Brief description of the issue" required autofocus>
             </div>
-            <div class="grid gap-4" style="grid-template-columns:1fr 1fr;">
+            <div class="grid gap-4 mb-6" style="grid-template-columns:1fr 1fr;">
                 <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="input-base">
-                        <option value="O">Open</option>
-                        <option value="P">Pending</option>
-                        <option value="C">Closed</option>
-                        <option value="R">Resolved</option>
+                    <label class="form-label">Category</label>
+                    <select name="category" class="input-base">
+                        {% for val, label in categories %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
@@ -35,11 +35,35 @@
                     </select>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Description</label>
-                <textarea name="description" class="input-base" rows="5" required></textarea>
+
+            <div class="divider mb-6"></div>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Assignment</p>
+            <div class="grid gap-4 mb-6" style="grid-template-columns:1fr 1fr;">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="input-base">
+                        <option value="O">Open</option>
+                        <option value="P">Pending</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assign to</label>
+                    <select name="assigned_to" class="input-base">
+                        <option value="">— Unassigned —</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.username }}{% if agent.get_full_name %} ({{ agent.get_full_name }}){% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div class="flex justify-end gap-3 mt-6" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+
+            <div class="divider mb-6"></div>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Description</p>
+            <div class="form-group mb-6">
+                <textarea name="description" class="input-base" rows="7" placeholder="Describe the issue in detail — include steps to reproduce, error messages, affected systems, etc." required></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid #2a2a2a;">
                 <a href="{% url 'incidents' %}" class="btn-ghost">Cancel</a>
                 <button type="submit" class="btn-primary">Create incident</button>
             </div>

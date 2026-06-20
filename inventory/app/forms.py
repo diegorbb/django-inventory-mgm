@@ -14,21 +14,13 @@ class ItemForm(ModelForm):
 class IncidentForm(ModelForm):
     class Meta:
         model = Incident
-        fields = "__all__"
-        exclude = ['requester']
+        fields = ['subject', 'category', 'priority', 'status', 'assigned_to', 'description']
 
 
 class CommentForm(ModelForm):
     class Meta:
         model = Comment
-        fields = ['content']
-        widgets = {
-            'content': forms.Textarea(attrs={
-                'class': 'block w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500',
-                'placeholder': 'Add a comment...',
-                'rows': '3'
-            })
-        }
+        fields = ['content', 'is_internal']
 
 
 class SoftwareForm(ModelForm):

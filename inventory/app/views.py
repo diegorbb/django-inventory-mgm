@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
-from .models import Item, Incident, Comment, Software, Asset
+from .models import Item, Incident, IncidentActivity, Comment, Software, Asset
 from .forms import ItemForm, IncidentForm, CommentForm, UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm, SoftwareForm, AssetForm
 from django.contrib.admin.views.decorators import staff_member_required
 import json
@@ -122,98 +122,192 @@ def inventory(request):  # Rename from home to inventory
 
 
 @login_required(login_url='login')
+@login_required(login_url='login')
 def incidentPage(request):
     search_query = request.GET.get('search', '')
     days = request.GET.get('days', '')
-    status_filter = request.GET.get('status', 'active')  # Default to active incidents
-    
-    incidents = Incident.objects.all()
-    
-    # Filter by search query
+    status_filter = request.GET.get('status', 'active')
+    priority_filter = request.GET.get('priority', '')
+    category_filter = request.GET.get('category', '')
+    assignee_filter = request.GET.get('assignee', '')
+
+    incidents = Incident.objects.select_related('requester', 'assigned_to').all()
+
     if search_query:
         incidents = incidents.filter(
             Q(subject__icontains=search_query) |
-            Q(description__icontains=search_query)
+            Q(description__icontains=search_query) |
+            Q(requester__username__icontains=search_query)
         )
-    
-    # Filter by days
     if days:
-        cutoff_date = timezone.now() - timedelta(days=int(days))
-        incidents = incidents.filter(created__gte=cutoff_date)
-    
-    # Filter by status
+        cutoff = timezone.now() - timedelta(days=int(days))
+        incidents = incidents.filter(created__gte=cutoff)
     if status_filter == 'active':
         incidents = incidents.exclude(status__in=['R', 'C'])
+    elif status_filter == 'mine':
+        incidents = incidents.filter(assigned_to=request.user).exclude(status__in=['R', 'C'])
+    elif status_filter == 'unassigned':
+        incidents = incidents.filter(assigned_to__isnull=True).exclude(status__in=['R', 'C'])
     elif status_filter != 'all':
         incidents = incidents.filter(status=status_filter)
-    
+    if priority_filter:
+        incidents = incidents.filter(priority=priority_filter)
+    if category_filter:
+        incidents = incidents.filter(category=category_filter)
+    if assignee_filter:
+        incidents = incidents.filter(assigned_to__id=assignee_filter)
+
+    # Stats for the list header
+    all_active = Incident.objects.exclude(status__in=['R', 'C'])
+    stats = {
+        'open': all_active.filter(status='O').count(),
+        'pending': all_active.filter(status='P').count(),
+        'urgent': all_active.filter(priority='U').count(),
+        'unassigned': all_active.filter(assigned_to__isnull=True).count(),
+        'mine': all_active.filter(assigned_to=request.user).count(),
+    }
+    agents = User.objects.filter(is_staff=True).order_by('username')
+
     context = {
         'incidents': incidents,
         'search_query': search_query,
         'days': days,
         'status_filter': status_filter,
+        'priority_filter': priority_filter,
+        'category_filter': category_filter,
+        'assignee_filter': assignee_filter,
+        'stats': stats,
+        'agents': agents,
+        'categories': Incident.CATEGORY_CHOICES,
     }
     return render(request, 'app/incidents/incidents.html', context)
 
 
 @login_required(login_url='login')
 def incident(request, pk):
-    incident = Incident.objects.get(id=pk)
-    comments = incident.comments.all()
+    inc = get_object_or_404(Incident, id=pk)
+    comments = inc.comments.all()
+    activity = inc.activity.select_related('user').all()
+    agents = User.objects.filter(is_staff=True).order_by('username')
     comment_form = CommentForm()
-
-    if request.method == 'POST':
-        comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
-            comment = comment_form.save(commit=False)
-            comment.incident = incident
-            comment.author = request.user
-            comment.save()
-            return redirect('incident', pk=pk)
-
     context = {
-        'incident': incident,
+        'incident': inc,
         'comments': comments,
-        'comment_form': comment_form
+        'activity': activity,
+        'comment_form': comment_form,
+        'agents': agents,
+        'priorities': Incident.PRIORITY_CHOICES,
+        'statuses': Incident.STATUS_CHOICES,
+        'categories': Incident.CATEGORY_CHOICES,
     }
     return render(request, 'app/incidents/incident.html', context)
 
 
 @login_required(login_url='login')
 def createIncident(request):
-
+    agents = User.objects.filter(is_staff=True).order_by('username')
     if request.method == 'POST':
         form = IncidentForm(request.POST)
         if form.is_valid():
-            incident = form.save(commit=False)
-            incident.requester = request.user
-            incident.save()
-            return redirect('incidents')
+            inc = form.save(commit=False)
+            inc.requester = request.user
+            inc.save()
+            IncidentActivity.objects.create(
+                incident=inc, user=request.user, action='created',
+                detail=f'Incident created by {request.user.username}'
+            )
+            _notify_assignment(inc, request)
+            messages.success(request, f'Incident #{inc.id} created.')
+            return redirect('incident', pk=inc.id)
     else:
         form = IncidentForm()
-    
-    context = {'form': form}
-    return render(request, 'app/incidents/create_incident.html', context)
+    return render(request, 'app/incidents/create_incident.html', {'form': form, 'agents': agents, 'categories': Incident.CATEGORY_CHOICES})
 
 
 @login_required(login_url='login')
 def editIncident(request, pk):
-    incident = Incident.objects.get(id=pk)
-
-    if request.user != incident.requester:
-        messages.error(request, 'You are not authorized to edit this incident.')
-        return redirect('incident', pk=pk)
-        
-    form = IncidentForm(instance=incident)
-
+    inc = get_object_or_404(Incident, id=pk)
+    agents = User.objects.filter(is_staff=True).order_by('username')
     if request.method == 'POST':
-        form = IncidentForm(request.POST, instance=incident)
+        old_status = inc.status
+        old_priority = inc.priority
+        old_assigned = inc.assigned_to_id
+        form = IncidentForm(request.POST, instance=inc)
         if form.is_valid():
-            form.save()
+            updated = form.save(commit=False)
+            # Track resolution time
+            if updated.status in ('R', 'C') and not inc.resolved_at:
+                updated.resolved_at = timezone.now()
+            elif updated.status in ('O', 'P') and inc.resolved_at:
+                updated.resolved_at = None
+            updated.save()
+            # Log activities
+            if updated.status != old_status:
+                IncidentActivity.objects.create(
+                    incident=updated, user=request.user, action='status',
+                    detail=f'{dict(Incident.STATUS_CHOICES).get(old_status)} → {dict(Incident.STATUS_CHOICES).get(updated.status)}'
+                )
+                if updated.status in ('R', 'C'):
+                    IncidentActivity.objects.create(incident=updated, user=request.user, action='resolved', detail='')
+            if updated.priority != old_priority:
+                IncidentActivity.objects.create(
+                    incident=updated, user=request.user, action='priority',
+                    detail=f'{dict(Incident.PRIORITY_CHOICES).get(old_priority)} → {dict(Incident.PRIORITY_CHOICES).get(updated.priority)}'
+                )
+            if updated.assigned_to_id != old_assigned:
+                name = updated.assigned_to.username if updated.assigned_to else 'Unassigned'
+                IncidentActivity.objects.create(
+                    incident=updated, user=request.user, action='assigned',
+                    detail=f'Assigned to {name}'
+                )
+                _notify_assignment(updated, request)
+            messages.success(request, 'Incident updated.')
             return redirect('incident', pk=pk)
-
-    context = {'incident': incident, 'form': form}
+    else:
+        form = IncidentForm(instance=inc)
+    context = {'incident': inc, 'form': form, 'agents': agents, 'categories': Incident.CATEGORY_CHOICES}
     return render(request, 'app/incidents/edit_incident.html', context)
+
+
+@login_required(login_url='login')
+@require_POST
+def incident_quick_update(request, pk):
+    """AJAX endpoint for inline status/priority/assignee changes from detail page."""
+    inc = get_object_or_404(Incident, id=pk)
+    data = json.loads(request.body)
+    field = data.get('field')
+    value = data.get('value')
+    allowed = {'status', 'priority', 'assigned_to'}
+    if field not in allowed:
+        return JsonResponse({'success': False, 'error': 'Invalid field'})
+
+    old_val = getattr(inc, field + '_id' if field == 'assigned_to' else field)
+
+    if field == 'assigned_to':
+        inc.assigned_to = User.objects.filter(id=value).first() if value else None
+        name = inc.assigned_to.username if inc.assigned_to else 'Unassigned'
+        IncidentActivity.objects.create(incident=inc, user=request.user, action='assigned', detail=f'Assigned to {name}')
+        _notify_assignment(inc, request)
+    elif field == 'status':
+        old_status = inc.status
+        inc.status = value
+        if value in ('R', 'C') and not inc.resolved_at:
+            inc.resolved_at = timezone.now()
+        elif value in ('O', 'P'):
+            inc.resolved_at = None
+        IncidentActivity.objects.create(
+            incident=inc, user=request.user, action='status',
+            detail=f'{dict(Incident.STATUS_CHOICES).get(old_status)} → {dict(Incident.STATUS_CHOICES).get(value)}'
+        )
+    elif field == 'priority':
+        old_priority = inc.priority
+        inc.priority = value
+        IncidentActivity.objects.create(
+            incident=inc, user=request.user, action='priority',
+            detail=f'{dict(Incident.PRIORITY_CHOICES).get(old_priority)} → {dict(Incident.PRIORITY_CHOICES).get(value)}'
+        )
+    inc.save()
+    return JsonResponse({'success': True})
 
 
 def loginPage(request):
@@ -284,33 +378,87 @@ def deleteItem(request, pk):
 
 
 @login_required(login_url='login')
+@require_POST
 def add_comment(request, pk):
-    incident = Incident.objects.get(id=pk)
-    if request.method == 'POST':
-        content = request.POST.get('content')
-        comment = Comment.objects.create(
-            incident=incident,
+    inc = get_object_or_404(Incident, id=pk)
+    content = request.POST.get('content', '').strip()
+    is_internal = request.POST.get('is_internal') == 'on'
+    if content:
+        Comment.objects.create(
+            incident=inc,
             author=request.user,
-            content=content
+            content=content,
+            is_internal=is_internal
         )
-        return redirect('incident', pk=pk)
+        IncidentActivity.objects.create(
+            incident=inc, user=request.user, action='comment',
+            detail='Internal note' if is_internal else 'Public reply'
+        )
+        _notify_comment(inc, request.user, content, is_internal)
     return redirect('incident', pk=pk)
 
 
 @login_required(login_url='login')
+@require_POST
 def delete_comment(request, pk, comment_id):
-    comment = Comment.objects.get(id=comment_id)
-    incident_id = comment.incident.id
-    
-    if request.user != comment.author:
-        messages.error(request, 'You are not authorized to delete this comment.')
-        return redirect('incident', pk=incident_id)
-
-    if request.method == 'POST':
+    comment = get_object_or_404(Comment, id=comment_id)
+    if request.user == comment.author or request.user.is_staff:
         comment.delete()
-        messages.success(request, 'Comment deleted successfully.')
-        return redirect('incident', pk=incident_id)
-    return redirect('incident', pk=incident_id)
+    return redirect('incident', pk=pk)
+
+
+def _notify_assignment(incident, request):
+    """Stub: send email to assigned agent. Wire up SMTP in settings to activate."""
+    if not incident.assigned_to or not incident.assigned_to.email:
+        return
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        if not getattr(settings, 'EMAIL_HOST', None):
+            return
+        send_mail(
+            subject=f'[Incident #{incident.id}] Assigned to you: {incident.subject}',
+            message=(
+                f'You have been assigned incident #{incident.id}.\n\n'
+                f'Subject: {incident.subject}\n'
+                f'Priority: {incident.get_priority_display()}\n'
+                f'Category: {incident.get_category_display()}\n\n'
+                f'View it at: {request.build_absolute_uri(f"/incident/{incident.id}/")}\n'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[incident.assigned_to.email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
+
+
+def _notify_comment(incident, author, content, is_internal):
+    """Stub: notify requester on public reply. Wire up SMTP in settings to activate."""
+    if is_internal:
+        return
+    if not incident.requester or not incident.requester.email:
+        return
+    if incident.requester == author:
+        return
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        if not getattr(settings, 'EMAIL_HOST', None):
+            return
+        send_mail(
+            subject=f'[Incident #{incident.id}] New reply: {incident.subject}',
+            message=(
+                f'{author.username} replied to your incident.\n\n'
+                f'{content[:500]}\n\n'
+                f'View the full thread at: /incident/{incident.id}/'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[incident.requester.email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
 
 
 @login_required(login_url='login')

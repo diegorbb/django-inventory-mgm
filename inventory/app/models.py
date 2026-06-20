@@ -45,7 +45,6 @@ class Incident(models.Model):
         ("P", "Pending"),
         ("C", "Closed"),
         ("R", "Resolved"),
-        ("NA", "NA"),
     )
 
     PRIORITY_CHOICES = (
@@ -55,37 +54,87 @@ class Incident(models.Model):
         ("U", "Urgent"),
     )
 
-    requester = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    subject = models.CharField(max_length=100)
+    CATEGORY_CHOICES = (
+        ("hardware", "Hardware"),
+        ("software", "Software"),
+        ("network", "Network"),
+        ("access", "Access & Permissions"),
+        ("security", "Security"),
+        ("other", "Other"),
+    )
+
+    requester = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='incidents_raised')
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='incidents_assigned')
+    subject = models.CharField(max_length=200)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='O')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='L')
     description = models.TextField()
-    created = models.DateField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-created']
 
     def __str__(self):
-        return self.subject
+        return f'#{self.id} {self.subject}'
+
+    @property
+    def is_open(self):
+        return self.status in ('O', 'P')
+
+    @property
+    def time_to_resolve(self):
+        if self.resolved_at and self.created:
+            delta = self.resolved_at - self.created
+            hours = int(delta.total_seconds() // 3600)
+            if hours < 24:
+                return f'{hours}h'
+            return f'{hours // 24}d {hours % 24}h'
+        return None
+
+
+class IncidentActivity(models.Model):
+    ACTION_CHOICES = (
+        ('created', 'Created'),
+        ('status', 'Status changed'),
+        ('priority', 'Priority changed'),
+        ('assigned', 'Assigned'),
+        ('comment', 'Comment added'),
+        ('resolved', 'Resolved'),
+    )
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE, related_name='activity')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    detail = models.CharField(max_length=200, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created']
+
+    def __str__(self):
+        return f'{self.incident} — {self.action}'
     
 
 class Comment(models.Model):
     incident = models.ForeignKey(Incident, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
-    content_html = models.TextField(editable=False, null=True, blank=True)  # Make nullable
+    content_html = models.TextField(editable=False, null=True, blank=True)
+    is_internal = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created']
+        ordering = ['created']
 
     def __str__(self):
         return f'{self.author.username} - {self.created.strftime("%Y-%m-%d %H:%M")}'
 
     def save(self, *args, **kwargs):
         import markdown
-        self.content_html = markdown.markdown(self.content, extensions=['fenced_code'])
+        self.content_html = markdown.markdown(self.content, extensions=['fenced_code', 'nl2br'])
         super().save(*args, **kwargs)
 
 

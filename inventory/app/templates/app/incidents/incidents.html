@@ -2,81 +2,138 @@
 {% block title %}Incidents — InvMgm{% endblock %}
 {% block content %}
 <div class="p-6">
-    <div class="page-header">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;">
         <div>
             <h1 class="page-title">Incidents</h1>
-            <p class="page-subtitle">{{ incidents|length }} incident{{ incidents|length|pluralize }}</p>
+            <p class="page-subtitle">Track, assign and resolve issues</p>
         </div>
-        <div class="flex items-center gap-3">
-            <form method="GET" class="flex items-center gap-2">
-                <div style="position:relative;">
-                    <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#555;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search…" class="input-base" style="padding-left:32px;width:200px;">
-                </div>
-                <select name="days" onchange="this.form.submit()" class="input-base" style="width:auto;">
-                    <option value="">All time</option>
-                    <option value="1" {% if days == '1' %}selected{% endif %}>24 hours</option>
-                    <option value="7" {% if days == '7' %}selected{% endif %}>7 days</option>
-                    <option value="30" {% if days == '30' %}selected{% endif %}>30 days</option>
-                </select>
-                <select name="status" onchange="this.form.submit()" class="input-base" style="width:auto;">
-                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
-                    <option value="O" {% if status_filter == 'O' %}selected{% endif %}>Open</option>
-                    <option value="P" {% if status_filter == 'P' %}selected{% endif %}>Pending</option>
-                    <option value="R" {% if status_filter == 'R' %}selected{% endif %}>Resolved</option>
-                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All statuses</option>
-                </select>
-            </form>
-            <a href="{% url 'create-incident' %}" class="btn-primary">+ New incident</a>
-        </div>
+        <a href="{% url 'create-incident' %}" class="btn-primary">+ New incident</a>
     </div>
 
+    <!-- Stat tabs -->
+    <div style="display:flex;gap:0;margin-bottom:20px;background:#111;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;">
+        <a href="?status=active" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'active' %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:{% if stats.open > 0 %}#f59e0b{% else %}#e5e5e5{% endif %};">{{ stats.open }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Open</div>
+        </a>
+        <a href="?status=P" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'P' %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:#888;">{{ stats.pending }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Pending</div>
+        </a>
+        <a href="?status=active&priority=U" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if priority_filter == 'U' %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:{% if stats.urgent > 0 %}#ef4444{% else %}#888{% endif %};">{{ stats.urgent }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Urgent</div>
+        </a>
+        <a href="?status=unassigned" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'unassigned' %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:{% if stats.unassigned > 0 %}#f59e0b{% else %}#888{% endif %};">{{ stats.unassigned }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Unassigned</div>
+        </a>
+        <a href="?status=mine" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;{% if status_filter == 'mine' %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:#888;">{{ stats.mine }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Assigned to me</div>
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:200px;">
+            <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#555;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search incidents…" class="input-base" style="padding-left:32px;">
+        </div>
+        <select name="status" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+            <option value="mine" {% if status_filter == 'mine' %}selected{% endif %}>Assigned to me</option>
+            <option value="unassigned" {% if status_filter == 'unassigned' %}selected{% endif %}>Unassigned</option>
+            <option value="O" {% if status_filter == 'O' %}selected{% endif %}>Open</option>
+            <option value="P" {% if status_filter == 'P' %}selected{% endif %}>Pending</option>
+            <option value="R" {% if status_filter == 'R' %}selected{% endif %}>Resolved</option>
+            <option value="C" {% if status_filter == 'C' %}selected{% endif %}>Closed</option>
+            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All statuses</option>
+        </select>
+        <select name="priority" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="">All priorities</option>
+            <option value="U" {% if priority_filter == 'U' %}selected{% endif %}>Urgent</option>
+            <option value="H" {% if priority_filter == 'H' %}selected{% endif %}>High</option>
+            <option value="M" {% if priority_filter == 'M' %}selected{% endif %}>Medium</option>
+            <option value="L" {% if priority_filter == 'L' %}selected{% endif %}>Low</option>
+        </select>
+        <select name="category" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="">All categories</option>
+            {% for val, label in categories %}
+            <option value="{{ val }}" {% if category_filter == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="days" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="">All time</option>
+            <option value="1" {% if days == '1' %}selected{% endif %}>24 hours</option>
+            <option value="7" {% if days == '7' %}selected{% endif %}>7 days</option>
+            <option value="30" {% if days == '30' %}selected{% endif %}>30 days</option>
+        </select>
+        {% if search_query or priority_filter or category_filter or days %}
+        <a href="?status={{ status_filter }}" class="btn-ghost">Clear</a>
+        {% endif %}
+    </form>
+
+    <!-- Table -->
     <div class="card">
         {% if incidents %}
         <table class="table-base">
             <thead>
                 <tr>
+                    <th style="width:40px;">#</th>
                     <th>Subject</th>
+                    <th>Category</th>
                     <th>Status</th>
                     <th>Priority</th>
                     <th>Requester</th>
+                    <th>Assigned to</th>
                     <th>Created</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                {% for incident in incidents %}
-                <tr>
-                    <td style="color:#e5e5e5;font-weight:500;">
-                        <a href="{% url 'incident' incident.id %}" style="color:#e5e5e5;text-decoration:none;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#e5e5e5'">{{ incident.subject }}</a>
+                {% for inc in incidents %}
+                <tr onclick="window.location='{% url 'incident' inc.id %}'" style="cursor:pointer;">
+                    <td style="font-family:monospace;font-size:11px;color:#444;">#{{ inc.id }}</td>
+                    <td style="color:#e5e5e5;font-weight:500;max-width:280px;">
+                        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ inc.subject }}</div>
+                    </td>
+                    <td style="font-size:12px;color:#666;">{{ inc.get_category_display }}</td>
+                    <td>
+                        {% if inc.status == 'O' %}<span class="badge badge-open">Open</span>
+                        {% elif inc.status == 'P' %}<span class="badge badge-pending">Pending</span>
+                        {% elif inc.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
+                        {% elif inc.status == 'C' %}<span class="badge" style="background:#1a1a1a;color:#555;border:1px solid #333;">Closed</span>
+                        {% endif %}
                     </td>
                     <td>
-                        {% if incident.status == 'O' %}<span class="badge badge-open">Open</span>
-                        {% elif incident.status == 'P' %}<span class="badge badge-pending">Pending</span>
-                        {% elif incident.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
-                        {% elif incident.status == 'C' %}<span class="badge badge-closed">Closed</span>
-                        {% else %}<span class="badge">{{ incident.get_status_display }}</span>{% endif %}
-                    </td>
-                    <td>
-                        {% if incident.priority == 'H' %}<span class="badge badge-high">High</span>
-                        {% elif incident.priority == 'U' %}<span class="badge badge-urgent">Urgent</span>
-                        {% elif incident.priority == 'M' %}<span class="badge badge-medium">Medium</span>
+                        {% if inc.priority == 'U' %}<span class="badge badge-urgent">Urgent</span>
+                        {% elif inc.priority == 'H' %}<span class="badge badge-high">High</span>
+                        {% elif inc.priority == 'M' %}<span class="badge badge-medium">Medium</span>
                         {% else %}<span class="badge badge-low">Low</span>{% endif %}
                     </td>
-                    <td>{{ incident.requester.username|default:"—" }}</td>
-                    <td>{{ incident.created|date:"M d, Y" }}</td>
-                    <td style="text-align:right;">
-                        <a href="{% url 'edit-incident' incident.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;">Edit</a>
+                    <td style="font-size:12px;color:#666;">{{ inc.requester.username|default:"—" }}</td>
+                    <td>
+                        {% if inc.assigned_to %}
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div style="width:20px;height:20px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#666;flex-shrink:0;">{{ inc.assigned_to.username|first|upper }}</div>
+                            <span style="font-size:12px;color:#888;">{{ inc.assigned_to.username }}</span>
+                        </div>
+                        {% else %}
+                        <span style="font-size:12px;color:#444;">Unassigned</span>
+                        {% endif %}
                     </td>
+                    <td style="font-size:12px;color:#555;white-space:nowrap;">{{ inc.created|date:"M d, Y" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
         <div class="empty-state">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <h3>No incidents</h3>
-            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-incident' %}" style="color:#3b82f6;">Create first incident</a>{% endif %}</p>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            <h3>No incidents found</h3>
+            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-incident' %}" style="color:#3b82f6;">Create the first incident</a>{% endif %}</p>
         </div>
         {% endif %}
     </div>

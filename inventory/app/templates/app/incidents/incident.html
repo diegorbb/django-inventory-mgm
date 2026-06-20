@@ -1,126 +1,225 @@
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 {% extends "main.html" %}
-{% block title %}{{ incident.subject }} — InvMgm{% endblock %}
+{% block title %}#{{ incident.id }} {{ incident.subject }} — InvMgm{% endblock %}
 {% block content %}
+<div style="display:flex;min-height:calc(100vh - 48px);">
 
-{% if messages %}
-{% for message in messages %}
-<div id="alert-msg" class="fixed bottom-4 right-4 z-50" style="background:{% if 'success' in message.tags %}#061a0e;border-color:#15803d44;color:#22c55e;{% else %}#1f0909;border-color:#991b1b44;color:#ef4444;{% endif %}border:1px solid;border-radius:6px;padding:10px 14px;font-size:13px;">{{ message }}</div>
-<script>setTimeout(function(){var a=document.getElementById('alert-msg');if(a){a.style.opacity='0';a.style.transition='opacity .5s';setTimeout(function(){a.remove()},500)}},4000)</script>
-{% endfor %}
-{% endif %}
-
-<div class="flex" style="min-height:calc(100vh - 48px);">
     <!-- Main content -->
-    <div class="flex-1 p-6" style="max-width:780px;">
-        <div style="margin-bottom:20px;">
-            <a href="{% url 'incidents' %}" class="text-xs" style="color:#555;text-decoration:none;">← Incidents</a>
+    <div style="flex:1;padding:24px;min-width:0;">
+
+        <!-- Breadcrumb -->
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin-bottom:20px;">
+            <a href="{% url 'incidents' %}" style="color:#555;text-decoration:none;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">Incidents</a>
+            <span>/</span>
+            <span style="color:#888;">#{{ incident.id }}</span>
         </div>
 
-        <div class="card p-6 mb-4">
-            <div class="flex items-start justify-between gap-4 mb-4">
-                <h1 style="font-size:20px;font-weight:600;color:#e5e5e5;margin:0;">{{ incident.subject }}</h1>
-                {% if user == incident.requester %}
-                <a href="{% url 'edit-incident' incident.id %}" class="btn-ghost" style="padding:5px 12px;font-size:12px;white-space:nowrap;">Edit</a>
-                {% endif %}
+        <!-- Ticket header -->
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                        <span style="font-size:12px;font-family:monospace;color:#444;background:#1a1a1a;padding:2px 8px;border-radius:4px;border:1px solid #2a2a2a;">#{{ incident.id }}</span>
+                        {% if incident.status == 'O' %}<span class="badge badge-open">Open</span>
+                        {% elif incident.status == 'P' %}<span class="badge badge-pending">Pending</span>
+                        {% elif incident.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
+                        {% elif incident.status == 'C' %}<span class="badge" style="background:#1a1a1a;color:#555;border:1px solid #333;">Closed</span>{% endif %}
+                        {% if incident.priority == 'U' %}<span class="badge badge-urgent">Urgent</span>
+                        {% elif incident.priority == 'H' %}<span class="badge badge-high">High</span>
+                        {% elif incident.priority == 'M' %}<span class="badge badge-medium">Medium</span>
+                        {% else %}<span class="badge badge-low">Low</span>{% endif %}
+                        <span class="badge" style="background:#1a1a1a;color:#666;border:1px solid #2a2a2a;">{{ incident.get_category_display }}</span>
+                    </div>
+                    <h1 style="font-size:18px;font-weight:600;color:#e5e5e5;margin:0 0 6px;">{{ incident.subject }}</h1>
+                    <div style="font-size:12px;color:#555;">
+                        Opened by <span style="color:#888;">{{ incident.requester.username|default:"unknown" }}</span>
+                        · {{ incident.created|date:"M d, Y H:i" }}
+                        {% if incident.time_to_resolve %} · Resolved in <span style="color:#22c55e;">{{ incident.time_to_resolve }}</span>{% endif %}
+                    </div>
+                </div>
+                <a href="{% url 'edit-incident' incident.id %}" class="btn-ghost" style="flex-shrink:0;padding:5px 12px;font-size:12px;">Edit</a>
             </div>
-            <div class="divider mb-4"></div>
-            <p style="font-size:14px;color:#aaa;line-height:1.6;white-space:pre-wrap;">{{ incident.description }}</p>
         </div>
 
-        <!-- Comments -->
-        <div class="card">
-            <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color:#2a2a2a;">
-                <span class="text-xs font-medium uppercase tracking-widest" style="color:#555;">Comments</span>
-                <span class="text-xs" style="color:#555;">{{ incident.comments.count }}</span>
+        <!-- Description -->
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;margin:0 0 12px;">Description</p>
+            <div style="font-size:14px;color:#aaa;line-height:1.7;white-space:pre-wrap;">{{ incident.description }}</div>
+        </div>
+
+        <!-- Thread: comments + activity interleaved -->
+        <div class="card" style="margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2a2a2a;">
+                <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Activity</span>
+                <span style="font-size:12px;color:#444;">{{ comments.count }} comment{{ comments.count|pluralize }}</span>
             </div>
 
-            <div class="divide-y" style="border-color:#1a1a1a;">
-                {% for comment in incident.comments.all %}
-                <div class="px-5 py-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2">
-                            <div style="width:24px;height:24px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#888;flex-shrink:0;">{{ comment.author.username|first|upper }}</div>
-                            <span style="font-size:13px;font-weight:500;color:#ccc;">{{ comment.author.username }}</span>
-                            <span style="font-size:12px;color:#444;">{{ comment.created|timesince }} ago</span>
-                        </div>
-                        {% if user == comment.author %}
-                        <form method="POST" action="{% url 'delete-comment' incident.id comment.id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" style="background:none;border:none;cursor:pointer;font-size:12px;color:#555;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#555'" onclick="return confirm('Delete this comment?')">Delete</button>
-                        </form>
+            <!-- Comments -->
+            {% for comment in comments %}
+            <div style="padding:16px;border-bottom:1px solid #1a1a1a;{% if comment.is_internal %}background:#0f0e00;border-left:3px solid #f59e0b;{% endif %}">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div style="width:26px;height:26px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#666;flex-shrink:0;">{{ comment.author.username|first|upper }}</div>
+                        <span style="font-size:13px;font-weight:500;color:#ccc;">{{ comment.author.username }}</span>
+                        <span style="font-size:12px;color:#444;">{{ comment.created|date:"M d, Y H:i" }}</span>
+                        {% if comment.is_internal %}
+                        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#f59e0b;background:#1a1200;border:1px solid #92400e44;padding:1px 6px;border-radius:3px;">Internal</span>
                         {% endif %}
                     </div>
-                    <div style="font-size:14px;color:#999;line-height:1.6;padding-left:32px;">{{ comment.content_html|safe }}</div>
+                    {% if request.user == comment.author or request.user.is_staff %}
+                    <form method="POST" action="{% url 'delete-comment' incident.id comment.id %}">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none;border:none;cursor:pointer;color:#444;font-size:12px;padding:2px 6px;border-radius:3px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#444'" onclick="return confirm('Delete this comment?')">Delete</button>
+                    </form>
+                    {% endif %}
                 </div>
-                {% empty %}
-                <div class="empty-state" style="padding:32px;">
-                    <p>No comments yet</p>
+                <div style="font-size:14px;color:#999;line-height:1.7;padding-left:34px;">{{ comment.content_html|safe }}</div>
+            </div>
+            {% empty %}
+            <div class="empty-state" style="padding:32px;">
+                <p>No comments yet — be the first to reply</p>
+            </div>
+            {% endfor %}
+
+            <!-- Activity log -->
+            {% if activity %}
+            <div style="padding:12px 16px;border-top:1px solid #2a2a2a;">
+                <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">History</p>
+                {% for event in activity %}
+                <div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12px;color:#444;">
+                    <div style="width:5px;height:5px;border-radius:50%;background:#333;flex-shrink:0;"></div>
+                    <span style="color:#555;">{{ event.user.username|default:"System" }}</span>
+                    <span>{{ event.detail }}</span>
+                    <span style="margin-left:auto;white-space:nowrap;">{{ event.created|date:"M d H:i" }}</span>
                 </div>
                 {% endfor %}
             </div>
+            {% endif %}
 
-            <!-- Comment form -->
-            <div class="px-5 py-4 border-t" style="border-color:#2a2a2a;">
+            <!-- Reply box -->
+            <div style="padding:16px;border-top:1px solid #2a2a2a;">
                 <form method="POST" action="{% url 'add-comment' incident.id %}">
                     {% csrf_token %}
-                    <div class="form-group">
-                        <label class="form-label">Add comment <span style="color:#444;font-size:10px;">(markdown supported)</span></label>
-                        <textarea id="comment-input" name="content" class="input-base" rows="3" placeholder="Write a comment…" required></textarea>
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                        <div style="width:26px;height:26px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#666;flex-shrink:0;margin-top:2px;">{{ request.user.username|first|upper }}</div>
+                        <div style="flex:1;">
+                            <textarea id="reply-box" name="content" class="input-base" rows="3" placeholder="Write a reply… (markdown supported)" required></textarea>
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                                <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer;">
+                                    <input type="checkbox" name="is_internal" style="accent-color:#f59e0b;">
+                                    <span>Internal note (not visible to requester)</span>
+                                </label>
+                                <div style="display:flex;gap:8px;">
+                                    <button type="button" onclick="togglePreview()" class="btn-ghost" style="padding:5px 10px;font-size:12px;">Preview</button>
+                                    <button type="submit" class="btn-primary" style="padding:5px 12px;font-size:12px;">Post reply</button>
+                                </div>
+                            </div>
+                            <div id="reply-preview" class="hidden" style="margin-top:10px;padding:12px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;font-size:14px;color:#aaa;line-height:1.7;"></div>
+                        </div>
                     </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" onclick="togglePreview()" class="btn-ghost" style="padding:5px 12px;font-size:12px;">Preview</button>
-                        <button type="submit" class="btn-primary" style="padding:5px 12px;font-size:12px;">Post comment</button>
-                    </div>
-                    <div id="comment-preview" class="hidden mt-3 p-4 rounded" style="background:#0a0a0a;border:1px solid #2a2a2a;font-size:14px;color:#aaa;line-height:1.6;"></div>
                 </form>
             </div>
         </div>
+
     </div>
 
-    <!-- Right panel -->
-    <aside class="border-l p-5 flex-shrink-0" style="width:220px;border-color:#2a2a2a;">
-        <div style="margin-bottom:20px;">
-            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Status</p>
-            {% if incident.status == 'O' %}<span class="badge badge-open">Open</span>
-            {% elif incident.status == 'P' %}<span class="badge badge-pending">Pending</span>
-            {% elif incident.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
-            {% elif incident.status == 'C' %}<span class="badge badge-closed">Closed</span>
-            {% else %}<span class="badge">{{ incident.get_status_display }}</span>{% endif %}
-        </div>
-        <div style="margin-bottom:20px;">
-            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Priority</p>
-            {% if incident.priority == 'H' %}<span class="badge badge-high">High</span>
-            {% elif incident.priority == 'U' %}<span class="badge badge-urgent">Urgent</span>
-            {% elif incident.priority == 'M' %}<span class="badge badge-medium">Medium</span>
-            {% else %}<span class="badge badge-low">Low</span>{% endif %}
-        </div>
-        <div class="divider mb-4"></div>
-        <div style="margin-bottom:20px;">
-            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Requester</p>
-            <div style="font-size:13px;color:#888;">{{ incident.requester.username|default:"—" }}</div>
-            {% if incident.requester.email %}<div style="font-size:11px;color:#555;margin-top:2px;">{{ incident.requester.email }}</div>{% endif %}
-        </div>
-        <div class="divider mb-4"></div>
+    <!-- Right sidebar -->
+    <aside style="width:240px;flex-shrink:0;border-left:1px solid #2a2a2a;padding:20px;display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Quick actions -->
         <div>
-            <p class="text-xs uppercase tracking-widest mb-3" style="color:#444;">Timeline</p>
-            <div style="font-size:12px;color:#555;margin-bottom:6px;">
-                <span style="color:#666;">Created</span><br>{{ incident.created|date:"M d, Y" }}
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Status</p>
+            <select id="qs-status" class="input-base" style="font-size:12px;" onchange="quickUpdate('status', this.value)">
+                {% for val, label in statuses %}
+                <option value="{{ val }}" {% if incident.status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Priority</p>
+            <select id="qs-priority" class="input-base" style="font-size:12px;" onchange="quickUpdate('priority', this.value)">
+                {% for val, label in priorities %}
+                <option value="{{ val }}" {% if incident.priority == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Assigned to</p>
+            <select id="qs-assigned" class="input-base" style="font-size:12px;" onchange="quickUpdate('assigned_to', this.value)">
+                <option value="">— Unassigned —</option>
+                {% for agent in agents %}
+                <option value="{{ agent.id }}" {% if incident.assigned_to and incident.assigned_to.id == agent.id %}selected{% endif %}>{{ agent.username }}</option>
+                {% endfor %}
+            </select>
+            <div id="qs-saved" style="display:none;font-size:11px;color:#22c55e;margin-top:6px;">✓ Saved</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Metadata -->
+        <div>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Details</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <div>
+                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Category</div>
+                    <div style="font-size:12px;color:#888;">{{ incident.get_category_display }}</div>
+                </div>
+                <div>
+                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Requester</div>
+                    <div style="font-size:12px;color:#888;">{{ incident.requester.username|default:"—" }}</div>
+                    {% if incident.requester.email %}<div style="font-size:11px;color:#555;">{{ incident.requester.email }}</div>{% endif %}
+                </div>
+                <div>
+                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Created</div>
+                    <div style="font-size:12px;color:#888;">{{ incident.created|date:"M d, Y" }}</div>
+                    <div style="font-size:11px;color:#555;">{{ incident.created|timesince }} ago</div>
+                </div>
+                {% if incident.resolved_at %}
+                <div>
+                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Resolved</div>
+                    <div style="font-size:12px;color:#22c55e;">{{ incident.resolved_at|date:"M d, Y H:i" }}</div>
+                    {% if incident.time_to_resolve %}<div style="font-size:11px;color:#555;">in {{ incident.time_to_resolve }}</div>{% endif %}
+                </div>
+                {% endif %}
+                <div>
+                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Last updated</div>
+                    <div style="font-size:12px;color:#888;">{{ incident.updated|timesince }} ago</div>
+                </div>
             </div>
         </div>
+
     </aside>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-function togglePreview(){
-    var p=document.getElementById('comment-preview');
-    var t=document.getElementById('comment-input');
-    p.classList.toggle('hidden');
-    if(!p.classList.contains('hidden')) p.innerHTML=marked.parse(t.value||'');
+var QUICK_URL = "{% url 'incident-quick-update' incident.id %}";
+var CSRF = "{{ csrf_token }}";
+
+function quickUpdate(field, value) {
+    fetch(QUICK_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
+        body: JSON.stringify({field: field, value: value})
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            var s = document.getElementById('qs-saved');
+            s.style.display = 'block';
+            setTimeout(function(){ s.style.display = 'none'; }, 2000);
+        }
+    });
 }
-document.getElementById('comment-input').addEventListener('input',function(){
-    var p=document.getElementById('comment-preview');
-    if(!p.classList.contains('hidden')) p.innerHTML=marked.parse(this.value||'');
+
+function togglePreview() {
+    var p = document.getElementById('reply-preview');
+    var t = document.getElementById('reply-box');
+    p.classList.toggle('hidden');
+    if (!p.classList.contains('hidden')) p.innerHTML = marked.parse(t.value || '');
+}
+document.getElementById('reply-box').addEventListener('input', function() {
+    var p = document.getElementById('reply-preview');
+    if (!p.classList.contains('hidden')) p.innerHTML = marked.parse(this.value || '');
 });
 </script>
 {% endblock %}
