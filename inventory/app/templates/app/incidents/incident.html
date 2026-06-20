@@ -82,16 +82,21 @@
 
             <!-- Activity log -->
             {% if activity %}
-            <div style="padding:12px 16px;border-top:1px solid #2a2a2a;">
-                <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">History</p>
-                {% for event in activity %}
-                <div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12px;color:#444;">
-                    <div style="width:5px;height:5px;border-radius:50%;background:#333;flex-shrink:0;"></div>
-                    <span style="color:#555;">{{ event.user.username|default:"System" }}</span>
-                    <span>{{ event.detail }}</span>
-                    <span style="margin-left:auto;white-space:nowrap;">{{ event.created|date:"M d H:i" }}</span>
+            <div style="border-top:1px solid #2a2a2a;">
+                <button onclick="toggleHistory()" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 16px;background:none;border:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#111'" onmouseout="this.style.background='none'">
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;">History <span style="color:#333;font-weight:400;">({{ activity|length }} event{{ activity|length|pluralize }})</span></span>
+                    <svg id="history-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div id="history-body" style="display:none;padding:4px 16px 12px;">
+                    {% for event in activity %}
+                    <div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12px;color:#444;">
+                        <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;flex-shrink:0;"></div>
+                        <span style="color:#555;">{{ event.user.username|default:"System" }}</span>
+                        <span>{{ event.detail }}</span>
+                        <span style="margin-left:auto;white-space:nowrap;">{{ event.created|date:"M d H:i" }}</span>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
             {% endif %}
 
@@ -194,6 +199,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
+function toggleHistory() {
+    var body = document.getElementById('history-body');
+    var chevron = document.getElementById('history-chevron');
+    var hidden = body.style.display === 'none';
+    body.style.display = hidden ? 'block' : 'none';
+    chevron.style.transform = hidden ? 'rotate(180deg)' : '';
+}
+
 var QUICK_URL = "{% url 'incident-quick-update' incident.id %}";
 var CSRF = "{{ csrf_token }}";
 
