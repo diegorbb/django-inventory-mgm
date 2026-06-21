@@ -37,6 +37,7 @@ urlpatterns = [
 
     path('assets/', views.asset_list, name='assets'),
     path('assets/create/', views.create_asset, name='create-asset'),
+    path('assets/bulk-upload/', views.asset_bulk_upload, name='asset-bulk-upload'),
     path('assets/<int:pk>/', views.asset_detail, name='asset-detail'),
     path('assets/delete/<int:pk>/', views.delete_asset, name='delete-asset'),
     path('assets/edit/<int:id>/', views.edit_asset, name='edit-asset'),

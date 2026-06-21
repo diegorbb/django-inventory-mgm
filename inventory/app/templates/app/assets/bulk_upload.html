@@ -1,0 +1,71 @@
+{% extends "main.html" %}
+{% block title %}Bulk Upload Assets — InvMgm{% endblock %}
+{% block content %}
+<div class="p-6" style="max-width:680px;">
+    <div style="margin-bottom:20px;">
+        <a href="{% url 'assets' %}" class="text-xs" style="color:#555;text-decoration:none;">← Assets</a>
+        <h1 class="page-title" style="margin-top:6px;">Bulk upload assets</h1>
+        <p class="page-subtitle">Import multiple assets at once via CSV</p>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div style="background:{% if 'success' in message.tags %}#061a0e;border-color:#15803d44;color:#22c55e;{% else %}#1a1200;border-color:#92400e44;color:#f59e0b;{% endif %}border:1px solid;border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:16px;">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Upload form -->
+    <div class="card p-5 mb-4">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="border:2px dashed #2a2a2a;border-radius:8px;padding:32px;text-align:center;margin-bottom:20px;cursor:pointer;transition:border-color .15s;" id="drop-zone" onclick="document.getElementById('csv-input').click()" onmouseover="this.style.borderColor='#444'" onmouseout="this.style.borderColor='#2a2a2a'">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5" style="margin:0 auto 12px;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div style="font-size:14px;color:#888;margin-bottom:4px;">Click to choose a CSV file</div>
+                <div id="file-name" style="font-size:12px;color:#555;">No file selected</div>
+                <input type="file" id="csv-input" name="csv_file" accept=".csv" style="display:none;" onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : 'No file selected'">
+            </div>
+            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+                <a href="{% url 'assets' %}" class="btn-ghost">Cancel</a>
+                <button type="submit" class="btn-primary">Upload &amp; import</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Format spec -->
+    <div class="card">
+        <div style="padding:12px 16px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">CSV format</span>
+            <a href="data:text/csv;charset=utf-8,name,tag,model,hardware,serial,location,status,purchase_date,warranty%0AExample%20Laptop,TAG-001,ThinkPad%20X1,Laptop,SN123456,London%20HQ,Active,2024-01-15,2027-01-15" download="assets_template.csv" class="btn-ghost" style="padding:4px 10px;font-size:12px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download template
+            </a>
+        </div>
+        <div style="padding:16px;overflow-x:auto;">
+            <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;padding:6px 12px;color:#555;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #2a2a2a;">Column</th>
+                        <th style="text-align:left;padding:6px 12px;color:#555;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #2a2a2a;">Required</th>
+                        <th style="text-align:left;padding:6px 12px;color:#555;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #2a2a2a;">Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for col, req, ex in columns %}
+                    <tr>
+                        <td style="padding:8px 12px;border-bottom:1px solid #1a1a1a;font-family:monospace;color:#ccc;">{{ col }}</td>
+                        <td style="padding:8px 12px;border-bottom:1px solid #1a1a1a;">
+                            {% if req %}<span class="badge badge-high" style="font-size:10px;">Required</span>
+                            {% else %}<span class="badge" style="background:#1a1a1a;color:#555;border:1px solid #333;font-size:10px;">Optional</span>{% endif %}
+                        </td>
+                        <td style="padding:8px 12px;border-bottom:1px solid #1a1a1a;color:#666;">{{ ex }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid #2a2a2a;font-size:12px;color:#555;">
+            Dates must be in <code style="color:#888;background:#1a1a1a;padding:1px 5px;border-radius:3px;">YYYY-MM-DD</code> format. Rows with missing required fields are skipped with an error report.
+        </div>
+    </div>
+</div>
+{% endblock %}

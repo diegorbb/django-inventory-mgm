@@ -2,51 +2,157 @@
 {% block title %}Assets — InvMgm{% endblock %}
 {% block content %}
 <div class="p-6">
-    <div class="page-header">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;">
         <div>
             <h1 class="page-title">Assets</h1>
-            <p class="page-subtitle">{{ assets|length }} asset{{ assets|length|pluralize }}</p>
+            <p class="page-subtitle">Hardware inventory & lifecycle tracking</p>
         </div>
-        <div class="flex items-center gap-3">
-            <form method="GET" style="position:relative;">
-                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-4);" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" name="search" value="{{ search_query }}" placeholder="Search assets…" class="input-base" style="padding-left:32px;width:220px;">
-            </form>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <!-- Export dropdown -->
+            <div style="position:relative;" id="export-wrap">
+                <button onclick="toggleExport()" class="btn-ghost">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export
+                </button>
+                <div id="export-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#111;border:1px solid #2a2a2a;border-radius:6px;min-width:140px;z-index:50;overflow:hidden;">
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}export=csv" style="display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;color:#aaa;text-decoration:none;" onmouseover="this.style.background='#1a1a1a';this.style.color='#e5e5e5'" onmouseout="this.style.background='transparent';this.style.color='#aaa'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        CSV
+                    </a>
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}export=json" style="display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;color:#aaa;text-decoration:none;" onmouseover="this.style.background='#1a1a1a';this.style.color='#e5e5e5'" onmouseout="this.style.background='transparent';this.style.color='#aaa'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        JSON
+                    </a>
+                </div>
+            </div>
+            <a href="{% url 'asset-bulk-upload' %}" class="btn-ghost">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Bulk upload
+            </a>
             <a href="{% url 'create-asset' %}" class="btn-primary">+ Add asset</a>
         </div>
     </div>
 
+    <!-- Stat tabs -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-bottom:20px;background:#111;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;">
+        <a href="?" style="padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if not status_filter %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:#e5e5e5;">{{ stats.total }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Total</div>
+        </a>
+        <a href="?status=Active" style="padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'Active' %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:#22c55e;">{{ stats.active }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Active</div>
+        </a>
+        <a href="?status=Inactive" style="padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'Inactive' %}background:#1a1a1a;{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:#888;">{{ stats.inactive }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Inactive</div>
+        </a>
+        <a href="?" style="padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;">
+            <div style="font-size:20px;font-weight:600;color:{% if stats.unassigned > 0 %}#f59e0b{% else %}#888{% endif %};">{{ stats.unassigned }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Unassigned</div>
+        </a>
+        <a href="?" style="padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;">
+            <div style="font-size:20px;font-weight:600;color:{% if stats.warranty_expiring > 0 %}#f59e0b{% else %}#888{% endif %};">{{ stats.warranty_expiring }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Exp. soon</div>
+        </a>
+        <a href="?" style="padding:12px 16px;text-align:center;text-decoration:none;">
+            <div style="font-size:20px;font-weight:600;color:{% if stats.warranty_expired > 0 %}#ef4444{% else %}#888{% endif %};">{{ stats.warranty_expired }}</div>
+            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Exp. warranty</div>
+        </a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div style="background:{% if 'success' in message.tags %}#061a0e;border-color:#15803d44;color:#22c55e;{% else %}#1a1200;border-color:#92400e44;color:#f59e0b;{% endif %}border:1px solid;border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:16px;">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Filters -->
+    <form method="GET" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:200px;">
+            <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#555;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search name, tag, serial, model…" class="input-base" style="padding-left:32px;">
+        </div>
+        <select name="status" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="">All statuses</option>
+            <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
+            <option value="Inactive" {% if status_filter == 'Inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+        <select name="hardware" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="">All hardware types</option>
+            {% for hw in hardware_types %}
+            <option value="{{ hw }}" {% if hardware_filter == hw %}selected{% endif %}>{{ hw }}</option>
+            {% endfor %}
+        </select>
+        <select name="location" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="">All locations</option>
+            {% for loc in locations %}
+            <option value="{{ loc }}" {% if location_filter == loc %}selected{% endif %}>{{ loc }}</option>
+            {% endfor %}
+        </select>
+        {% if search_query or status_filter or hardware_filter or location_filter %}
+        <a href="?" class="btn-ghost">Clear filters</a>
+        {% endif %}
+    </form>
+
+    <!-- Table -->
     <div class="card">
         {% if assets %}
+        <div style="padding:10px 16px;border-bottom:1px solid #2a2a2a;font-size:12px;color:#555;">
+            Showing {{ assets|length }} asset{{ assets|length|pluralize }}{% if search_query or status_filter or hardware_filter or location_filter %} (filtered){% endif %}
+        </div>
         <table class="table-base">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Tag</th>
+                    <th>Type / Model</th>
                     <th>Status</th>
-                    <th>Assigned to</th>
                     <th>Location</th>
+                    <th>Assigned to</th>
                     <th>Warranty</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for asset in assets %}
-                <tr>
-                    <td style="color:var(--text);font-weight:500;">
-                        <a href="{% url 'asset-detail' asset.id %}" style="color:var(--text);text-decoration:none;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#e5e5e5'">{{ asset.name }}</a>
+                <tr onclick="window.location='{% url 'asset-detail' asset.id %}'" style="cursor:pointer;">
+                    <td style="font-weight:500;">
+                        <div style="color:#e5e5e5;">{{ asset.name }}</div>
+                        <div style="font-size:11px;color:#555;margin-top:1px;font-family:monospace;">{{ asset.serial }}</div>
                     </td>
-                    <td style="font-family:monospace;font-size:12px;color:var(--text-3);">{{ asset.tag }}</td>
+                    <td style="font-family:monospace;font-size:12px;color:#888;">{{ asset.tag }}</td>
+                    <td>
+                        <div style="font-size:13px;color:#aaa;">{{ asset.hardware }}</div>
+                        <div style="font-size:11px;color:#555;margin-top:1px;">{{ asset.model }}</div>
+                    </td>
                     <td>
                         {% if asset.status == 'Active' %}<span class="badge badge-active">Active</span>
                         {% else %}<span class="badge badge-inactive">Inactive</span>{% endif %}
                     </td>
-                    <td>{{ asset.assigned_to.username|default:"—" }}</td>
-                    <td>{{ asset.location }}</td>
-                    <td style="font-size:12px;">{{ asset.warranty|date:"M d, Y" }}</td>
-                    <td style="text-align:right;">
-                        <a href="{% url 'edit-asset' asset.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;margin-right:6px;">Edit</a>
-                        <a href="{% url 'delete-asset' asset.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--danger);border-color:#991b1b44;">Delete</a>
+                    <td style="font-size:13px;color:#888;">{{ asset.location }}</td>
+                    <td>
+                        {% if asset.assigned_to %}
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div style="width:20px;height:20px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#666;flex-shrink:0;">{{ asset.assigned_to.username|first|upper }}</div>
+                            <span style="font-size:12px;color:#888;">{{ asset.assigned_to.username }}</span>
+                        </div>
+                        {% else %}
+                        <span style="font-size:12px;color:#444;">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:12px;">
+                        {% if asset.warranty < today %}
+                        <span style="color:#ef4444;">{{ asset.warranty|date:"M d, Y" }}</span>
+                        {% else %}
+                        <span style="color:#888;">{{ asset.warranty|date:"M d, Y" }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right;" onclick="event.stopPropagation()">
+                        <a href="{% url 'edit-asset' asset.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;margin-right:4px;">Edit</a>
+                        <a href="{% url 'delete-asset' asset.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;color:#ef4444;border-color:#991b1b44;">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -56,9 +162,21 @@
         <div class="empty-state">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             <h3>No assets found</h3>
-            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-asset' %}" style="color:var(--brand);">Add your first asset</a>{% endif %}</p>
+            <p>{% if search_query or status_filter or hardware_filter or location_filter %}Try adjusting your filters — <a href="?" style="color:#3b82f6;">clear all</a>{% else %}<a href="{% url 'create-asset' %}" style="color:#3b82f6;">Add your first asset</a> or <a href="{% url 'asset-bulk-upload' %}" style="color:#3b82f6;">bulk upload</a>{% endif %}</p>
         </div>
         {% endif %}
     </div>
 </div>
+
+<script>
+function toggleExport() {
+    var m = document.getElementById('export-menu');
+    m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('export-wrap').contains(e.target)) {
+        document.getElementById('export-menu').style.display = 'none';
+    }
+});
+</script>
 {% endblock %}

@@ -592,24 +592,81 @@ def toggle_user_status(request, user_id):
 
 
 @login_required(login_url='login')
+@login_required(login_url='login')
 def asset_list(request):
+    import csv, io
     search_query = request.GET.get('search', '')
-    assets = Asset.objects.all()
-    
+    status_filter = request.GET.get('status', '')
+    hardware_filter = request.GET.get('hardware', '')
+    location_filter = request.GET.get('location', '')
+
+    assets = Asset.objects.select_related('assigned_to').all()
+
     if search_query:
         assets = assets.filter(
             Q(name__icontains=search_query) |
             Q(tag__icontains=search_query) |
+            Q(serial__icontains=search_query) |
+            Q(model__icontains=search_query) |
             Q(location__icontains=search_query)
         )
-    
+    if status_filter:
+        assets = assets.filter(status=status_filter)
+    if hardware_filter:
+        assets = assets.filter(hardware__icontains=hardware_filter)
+    if location_filter:
+        assets = assets.filter(location__icontains=location_filter)
+
+    # Export
+    export_fmt = request.GET.get('export', '')
+    if export_fmt == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="assets.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Tag', 'Model', 'Hardware', 'Serial', 'Status', 'Location', 'Assigned To', 'Purchase Date', 'Warranty'])
+        for a in assets:
+            writer.writerow([a.name, a.tag, a.model, a.hardware, a.serial, a.status, a.location,
+                             a.assigned_to.username if a.assigned_to else '', a.purchase_date, a.warranty])
+        return response
+
+    if export_fmt == 'json':
+        import json as _json
+        data = []
+        for a in assets:
+            data.append({'id': a.id, 'name': a.name, 'tag': a.tag, 'model': a.model,
+                         'hardware': a.hardware, 'serial': a.serial, 'status': a.status,
+                         'location': a.location, 'assigned_to': a.assigned_to.username if a.assigned_to else None,
+                         'purchase_date': str(a.purchase_date), 'warranty': str(a.warranty)})
+        response = HttpResponse(_json.dumps(data, indent=2), content_type='application/json')
+        response['Content-Disposition'] = 'attachment; filename="assets.json"'
+        return response
+
+    today = timezone.now().date()
+    stats = {
+        'total': Asset.objects.count(),
+        'active': Asset.objects.filter(status='Active').count(),
+        'inactive': Asset.objects.filter(status='Inactive').count(),
+        'unassigned': Asset.objects.filter(assigned_to__isnull=True).count(),
+        'warranty_expired': Asset.objects.filter(warranty__lt=today).count(),
+        'warranty_expiring': Asset.objects.filter(warranty__gte=today, warranty__lte=today + timedelta(days=90)).count(),
+    }
+    hardware_types = Asset.objects.values_list('hardware', flat=True).distinct().order_by('hardware')
+    locations = Asset.objects.values_list('location', flat=True).distinct().order_by('location')
+
     context = {
         'assets': assets,
-        'search_query': search_query
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'hardware_filter': hardware_filter,
+        'location_filter': location_filter,
+        'stats': stats,
+        'hardware_types': hardware_types,
+        'locations': locations,
+        'today': today,
     }
     return render(request, 'app/assets/asset_list.html', context)
 
-@login_required(login_url='login')
+
 @login_required(login_url='login')
 def asset_detail(request, pk):
     asset = Asset.objects.get(id=pk)
@@ -618,19 +675,55 @@ def asset_detail(request, pk):
     return render(request, 'app/assets/asset_detail.html', context)
 
 
-
-    if request.method == 'POST':
-        form = AssetForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('assets')
-    else:
-        form = AssetForm()
-    
-    context = {'form': form}
-    return render(request, 'app/assets/create_asset.html', context)
-
 @login_required(login_url='login')
+def asset_bulk_upload(request):
+    import csv, io
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        f = request.FILES['csv_file']
+        decoded = f.read().decode('utf-8')
+        reader = csv.DictReader(io.StringIO(decoded))
+        created = 0
+        errors = []
+        required = {'name', 'tag', 'model', 'hardware', 'serial', 'location'}
+        for i, row in enumerate(reader, start=2):
+            missing = required - set(k.strip() for k, v in row.items() if v.strip())
+            if missing:
+                errors.append(f'Row {i}: missing {", ".join(missing)}')
+                continue
+            try:
+                Asset.objects.create(
+                    name=row.get('name', '').strip(),
+                    tag=row.get('tag', '').strip(),
+                    model=row.get('model', '').strip(),
+                    hardware=row.get('hardware', '').strip(),
+                    serial=row.get('serial', '').strip(),
+                    location=row.get('location', '').strip(),
+                    status=row.get('status', 'Active').strip() or 'Active',
+                    purchase_date=row.get('purchase_date') or timezone.now().date(),
+                    warranty=row.get('warranty') or (timezone.now().date().replace(year=timezone.now().year + 1)),
+                )
+                created += 1
+            except Exception as e:
+                errors.append(f'Row {i}: {e}')
+        if errors:
+            messages.warning(request, f'Imported {created} asset(s). {len(errors)} error(s): ' + '; '.join(errors[:3]))
+        else:
+            messages.success(request, f'Successfully imported {created} asset(s).')
+        return redirect('assets')
+    columns = [
+        ('name', True, 'ThinkPad X1 Carbon'),
+        ('tag', True, 'TAG-001'),
+        ('model', True, 'X1 Carbon Gen 11'),
+        ('hardware', True, 'Laptop'),
+        ('serial', True, 'SN123456789'),
+        ('location', True, 'London HQ'),
+        ('status', False, 'Active (default)'),
+        ('purchase_date', False, '2024-01-15'),
+        ('warranty', False, '2027-01-15'),
+    ]
+    return render(request, 'app/assets/bulk_upload.html', {'columns': columns})
+
+
 @login_required(login_url='login')
 def create_asset(request):
     if request.method == 'POST':
@@ -643,6 +736,7 @@ def create_asset(request):
     return render(request, 'app/assets/create_asset.html', {'form': form})
 
 
+@login_required(login_url='login')
 def delete_asset(request, pk):
     asset = Asset.objects.get(id=pk)
     if request.method == 'POST':
@@ -650,7 +744,7 @@ def delete_asset(request, pk):
         return redirect('assets')
     return render(request, 'app/assets/delete_asset.html', {'obj': asset})
 
-@login_required(login_url='login')
+
 @login_required(login_url='login')
 def edit_asset(request, id):
     asset = Asset.objects.get(id=id)
