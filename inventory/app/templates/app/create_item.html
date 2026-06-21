@@ -4,7 +4,7 @@
 <div class="p-6" style="max-width:600px;">
     <div class="page-header">
         <div>
-            <a href="{% url 'inventory' %}" class="text-xs" style="color:#555;text-decoration:none;">← Inventory</a>
+            <a href="{% url 'inventory' %}" class="text-xs" style="color:var(--text-4);text-decoration:none;">← Inventory</a>
             <h1 class="page-title" style="margin-top:6px;">Add item</h1>
         </div>
     </div>
@@ -33,7 +33,7 @@
                 <label class="form-label">Current Quantity</label>
                 <input type="number" name="qty" class="input-base" min="0" required>
             </div>
-            <div class="flex justify-end gap-3 mt-6" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+            <div class="flex justify-end gap-3 mt-6" style="padding-top:16px;border-top:1px solid var(--border);">
                 <a href="{% url 'inventory' %}" class="btn-ghost">Cancel</a>
                 <button type="submit" class="btn-primary">Add item</button>
             </div>

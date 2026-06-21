@@ -13,33 +13,33 @@
     </div>
 
     <!-- Stat tabs -->
-    <div style="display:flex;gap:0;margin-bottom:20px;background:#111;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;">
-        <a href="?status=active" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'active' %}background:#1a1a1a;{% endif %}">
+    <div style="display:flex;gap:0;margin-bottom:20px;background:var(--bg-1);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <a href="?status=active" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid var(--border);{% if status_filter == 'active' %}background:var(--bg-2);{% endif %}">
             <div style="font-size:20px;font-weight:600;color:{% if stats.open > 0 %}#f59e0b{% else %}#e5e5e5{% endif %};">{{ stats.open }}</div>
-            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Open</div>
+            <div style="font-size:11px;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Open</div>
         </a>
-        <a href="?status=P" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'P' %}background:#1a1a1a;{% endif %}">
-            <div style="font-size:20px;font-weight:600;color:#888;">{{ stats.pending }}</div>
-            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Pending</div>
+        <a href="?status=P" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid var(--border);{% if status_filter == 'P' %}background:var(--bg-2);{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:var(--text-3);">{{ stats.pending }}</div>
+            <div style="font-size:11px;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Pending</div>
         </a>
-        <a href="?status=active&priority=U" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if priority_filter == 'U' %}background:#1a1a1a;{% endif %}">
+        <a href="?status=active&priority=U" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid var(--border);{% if priority_filter == 'U' %}background:var(--bg-2);{% endif %}">
             <div style="font-size:20px;font-weight:600;color:{% if stats.urgent > 0 %}#ef4444{% else %}#888{% endif %};">{{ stats.urgent }}</div>
-            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Urgent</div>
+            <div style="font-size:11px;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Urgent</div>
         </a>
-        <a href="?status=unassigned" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid #2a2a2a;{% if status_filter == 'unassigned' %}background:#1a1a1a;{% endif %}">
+        <a href="?status=unassigned" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;border-right:1px solid var(--border);{% if status_filter == 'unassigned' %}background:var(--bg-2);{% endif %}">
             <div style="font-size:20px;font-weight:600;color:{% if stats.unassigned > 0 %}#f59e0b{% else %}#888{% endif %};">{{ stats.unassigned }}</div>
-            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Unassigned</div>
+            <div style="font-size:11px;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Unassigned</div>
         </a>
-        <a href="?status=mine" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;{% if status_filter == 'mine' %}background:#1a1a1a;{% endif %}">
-            <div style="font-size:20px;font-weight:600;color:#888;">{{ stats.mine }}</div>
-            <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Assigned to me</div>
+        <a href="?status=mine" style="flex:1;padding:12px 16px;text-align:center;text-decoration:none;{% if status_filter == 'mine' %}background:var(--bg-2);{% endif %}">
+            <div style="font-size:20px;font-weight:600;color:var(--text-3);">{{ stats.mine }}</div>
+            <div style="font-size:11px;color:var(--text-4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Assigned to me</div>
         </a>
     </div>
 
     <!-- Filters -->
     <form method="GET" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
         <div style="position:relative;flex:1;min-width:200px;">
-            <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#555;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-4);" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" name="search" value="{{ search_query }}" placeholder="Search incidents…" class="input-base" style="padding-left:32px;">
         </div>
         <select name="status" onchange="this.form.submit()" class="input-base" style="width:auto;">
@@ -95,16 +95,16 @@
             <tbody>
                 {% for inc in incidents %}
                 <tr onclick="window.location='{% url 'incident' inc.id %}'" style="cursor:pointer;">
-                    <td style="font-family:monospace;font-size:11px;color:#444;">#{{ inc.id }}</td>
-                    <td style="color:#e5e5e5;font-weight:500;max-width:280px;">
+                    <td style="font-family:monospace;font-size:11px;color:var(--text-4);">#{{ inc.id }}</td>
+                    <td style="color:var(--text);font-weight:500;max-width:280px;">
                         <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ inc.subject }}</div>
                     </td>
-                    <td style="font-size:12px;color:#666;">{{ inc.get_category_display }}</td>
+                    <td style="font-size:12px;color:var(--text-3);">{{ inc.get_category_display }}</td>
                     <td>
                         {% if inc.status == 'O' %}<span class="badge badge-open">Open</span>
                         {% elif inc.status == 'P' %}<span class="badge badge-pending">Pending</span>
                         {% elif inc.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
-                        {% elif inc.status == 'C' %}<span class="badge" style="background:#1a1a1a;color:#555;border:1px solid #333;">Closed</span>
+                        {% elif inc.status == 'C' %}<span class="badge" style="background:var(--bg-2);color:var(--text-4);border:1px solid #333;">Closed</span>
                         {% endif %}
                     </td>
                     <td>
@@ -113,18 +113,18 @@
                         {% elif inc.priority == 'M' %}<span class="badge badge-medium">Medium</span>
                         {% else %}<span class="badge badge-low">Low</span>{% endif %}
                     </td>
-                    <td style="font-size:12px;color:#666;">{{ inc.requester.username|default:"—" }}</td>
+                    <td style="font-size:12px;color:var(--text-3);">{{ inc.requester.username|default:"—" }}</td>
                     <td>
                         {% if inc.assigned_to %}
                         <div style="display:flex;align-items:center;gap:6px;">
-                            <div style="width:20px;height:20px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#666;flex-shrink:0;">{{ inc.assigned_to.username|first|upper }}</div>
-                            <span style="font-size:12px;color:#888;">{{ inc.assigned_to.username }}</span>
+                            <div style="width:20px;height:20px;background:var(--bg-3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--text-3);flex-shrink:0;">{{ inc.assigned_to.username|first|upper }}</div>
+                            <span style="font-size:12px;color:var(--text-3);">{{ inc.assigned_to.username }}</span>
                         </div>
                         {% else %}
-                        <span style="font-size:12px;color:#444;">Unassigned</span>
+                        <span style="font-size:12px;color:var(--text-4);">Unassigned</span>
                         {% endif %}
                     </td>
-                    <td style="font-size:12px;color:#555;white-space:nowrap;">{{ inc.created|date:"M d, Y" }}</td>
+                    <td style="font-size:12px;color:var(--text-4);white-space:nowrap;">{{ inc.created|date:"M d, Y" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -133,7 +133,7 @@
         <div class="empty-state">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
             <h3>No incidents found</h3>
-            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-incident' %}" style="color:#3b82f6;">Create the first incident</a>{% endif %}</p>
+            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-incident' %}" style="color:var(--brand);">Create the first incident</a>{% endif %}</p>
         </div>
         {% endif %}
     </div>

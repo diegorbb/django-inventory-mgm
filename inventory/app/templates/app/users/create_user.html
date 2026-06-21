@@ -4,14 +4,14 @@
 <div class="p-6" style="max-width:560px;">
     <div class="page-header">
         <div>
-            <a href="{% url 'users' %}" class="text-xs" style="color:#555;text-decoration:none;">← Users</a>
+            <a href="{% url 'users' %}" class="text-xs" style="color:var(--text-4);text-decoration:none;">← Users</a>
             <h1 class="page-title" style="margin-top:6px;">Create user</h1>
         </div>
     </div>
     <div class="card p-5">
         {% if messages %}
         {% for message in messages %}
-        <div style="background:{% if 'success' in message.tags %}#061a0e;border-color:#15803d44;color:#22c55e;{% else %}#1f0909;border-color:#991b1b44;color:#ef4444;{% endif %}border:1px solid;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:16px;">{{ message }}</div>
+        <div style="background:{% if 'success' in message.tags %}#061a0e;border-color:#15803d44;color:var(--ok);{% else %}#1f0909;border-color:#991b1b44;color:var(--danger);{% endif %}border:1px solid;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:16px;">{{ message }}</div>
         {% endfor %}
         {% endif %}
         <form method="POST">
@@ -20,7 +20,7 @@
                 <div class="form-group">
                     <label class="form-label">Username</label>
                     <input type="text" name="username" class="input-base" required>
-                    {% if form.username.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.username.errors.0 }}</p>{% endif %}
+                    {% if form.username.errors %}<p style="color:var(--danger);font-size:12px;margin-top:4px;">{{ form.username.errors.0 }}</p>{% endif %}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email</label>
@@ -39,32 +39,32 @@
                 <label class="form-label">Password</label>
                 <div style="position:relative;">
                     <input type="password" id="pw1" name="password1" class="input-base" style="padding-right:40px;" required>
-                    <button type="button" onclick="togglePw('pw1')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#555;">
+                    <button type="button" onclick="togglePw('pw1')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-4);">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                 </div>
-                {% if form.password1.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.password1.errors.0 }}</p>{% endif %}
+                {% if form.password1.errors %}<p style="color:var(--danger);font-size:12px;margin-top:4px;">{{ form.password1.errors.0 }}</p>{% endif %}
             </div>
             <div class="form-group">
                 <label class="form-label">Confirm password</label>
                 <div style="position:relative;">
                     <input type="password" id="pw2" name="password2" class="input-base" style="padding-right:40px;" required>
-                    <button type="button" onclick="togglePw('pw2')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#555;">
+                    <button type="button" onclick="togglePw('pw2')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-4);">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                 </div>
-                {% if form.password2.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.password2.errors.0 }}</p>{% endif %}
+                {% if form.password2.errors %}<p style="color:var(--danger);font-size:12px;margin-top:4px;">{{ form.password2.errors.0 }}</p>{% endif %}
             </div>
             <div class="form-group">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                    <input type="checkbox" name="is_staff" style="accent-color:#3b82f6;">
+                    <input type="checkbox" name="is_staff" style="accent-color:var(--brand);">
                     <span class="form-label" style="margin:0;">Staff / admin access</span>
                 </label>
             </div>
             <div style="margin-bottom:16px;">
                 <button type="button" onclick="generatePw()" class="btn-ghost" style="font-size:12px;">Generate secure password</button>
             </div>
-            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid var(--border);">
                 <a href="{% url 'users' %}" class="btn-ghost">Cancel</a>
                 <button type="submit" class="btn-primary">Create user</button>
             </div>

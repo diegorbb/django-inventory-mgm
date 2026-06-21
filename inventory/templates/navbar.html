@@ -1,35 +1,40 @@
 {% load static %}
-<nav class="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-4 border-b" style="background:#0a0a0a;border-color:#2a2a2a;">
-    <div class="flex items-center gap-3">
-        <a href="{% url 'dashboard' %}" class="flex items-center gap-2 text-sm font-semibold text-white no-underline">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
+<nav style="position:fixed;top:0;left:0;right:0;z-index:50;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--bg);border-bottom:1px solid var(--border);">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <a href="{% url 'dashboard' %}" style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--text);text-decoration:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             InvMgm
         </a>
     </div>
     {% if user.is_authenticated %}
-    <div class="flex items-center gap-3">
-        <span class="text-xs" style="color:#555;">
-            <span style="color:#888;">{{ user.username }}</span>
-            {% if user.is_staff %}<span class="badge" style="background:#0a0f1a;color:#3b82f6;border:1px solid #1d4ed844;margin-left:6px;">staff</span>{% endif %}
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:12px;color:var(--text-3);">{{ user.username }}
+            {% if user.is_staff %}<span class="badge badge-low" style="margin-left:4px;">staff</span>{% endif %}
         </span>
         <a href="{% url 'profile' %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             Profile
         </a>
         <button id="theme-toggle" class="btn-ghost" style="padding:4px 8px;" title="Toggle theme">
-            <svg id="dark-icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
-            <svg id="light-icon" class="hidden" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg id="icon-moon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+            <svg id="icon-sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         </button>
     </div>
     {% endif %}
 </nav>
 <script>
 (function(){
-    var di=document.getElementById('dark-icon'),li=document.getElementById('light-icon'),btn=document.getElementById('theme-toggle');
-    function sync(){var d=document.documentElement.classList.contains('dark');di.classList.toggle('hidden',d);li.classList.toggle('hidden',!d);}
-    sync();
-    if(btn)btn.addEventListener('click',function(){document.documentElement.classList.toggle('dark');localStorage.theme=document.documentElement.classList.contains('dark')?'dark':'light';sync();});
+    function syncIcons(){
+        var dark=document.documentElement.classList.contains('dark');
+        document.getElementById('icon-moon').style.display=dark?'':'none';
+        document.getElementById('icon-sun').style.display=dark?'none':'';
+    }
+    syncIcons();
+    var btn=document.getElementById('theme-toggle');
+    if(btn) btn.addEventListener('click',function(){
+        var isDark=document.documentElement.classList.toggle('dark');
+        localStorage.theme=isDark?'dark':'light';
+        syncIcons();
+    });
 })();
 </script>

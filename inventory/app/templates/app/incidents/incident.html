@@ -7,10 +7,10 @@
     <div style="flex:1;padding:24px;min-width:0;">
 
         <!-- Breadcrumb -->
-        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin-bottom:20px;">
-            <a href="{% url 'incidents' %}" style="color:#555;text-decoration:none;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">Incidents</a>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-4);margin-bottom:20px;">
+            <a href="{% url 'incidents' %}" style="color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">Incidents</a>
             <span>/</span>
-            <span style="color:#888;">#{{ incident.id }}</span>
+            <span style="color:var(--text-3);">#{{ incident.id }}</span>
         </div>
 
         <!-- Ticket header -->
@@ -18,22 +18,22 @@
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
                 <div style="flex:1;min-width:0;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-                        <span style="font-size:12px;font-family:monospace;color:#444;background:#1a1a1a;padding:2px 8px;border-radius:4px;border:1px solid #2a2a2a;">#{{ incident.id }}</span>
+                        <span style="font-size:12px;font-family:monospace;color:var(--text-4);background:var(--bg-2);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">#{{ incident.id }}</span>
                         {% if incident.status == 'O' %}<span class="badge badge-open">Open</span>
                         {% elif incident.status == 'P' %}<span class="badge badge-pending">Pending</span>
                         {% elif incident.status == 'R' %}<span class="badge badge-resolved">Resolved</span>
-                        {% elif incident.status == 'C' %}<span class="badge" style="background:#1a1a1a;color:#555;border:1px solid #333;">Closed</span>{% endif %}
+                        {% elif incident.status == 'C' %}<span class="badge" style="background:var(--bg-2);color:var(--text-4);border:1px solid #333;">Closed</span>{% endif %}
                         {% if incident.priority == 'U' %}<span class="badge badge-urgent">Urgent</span>
                         {% elif incident.priority == 'H' %}<span class="badge badge-high">High</span>
                         {% elif incident.priority == 'M' %}<span class="badge badge-medium">Medium</span>
                         {% else %}<span class="badge badge-low">Low</span>{% endif %}
-                        <span class="badge" style="background:#1a1a1a;color:#666;border:1px solid #2a2a2a;">{{ incident.get_category_display }}</span>
+                        <span class="badge" style="background:var(--bg-2);color:var(--text-3);border:1px solid var(--border);">{{ incident.get_category_display }}</span>
                     </div>
-                    <h1 style="font-size:18px;font-weight:600;color:#e5e5e5;margin:0 0 6px;">{{ incident.subject }}</h1>
-                    <div style="font-size:12px;color:#555;">
-                        Opened by <span style="color:#888;">{{ incident.requester.username|default:"unknown" }}</span>
+                    <h1 style="font-size:18px;font-weight:600;color:var(--text);margin:0 0 6px;">{{ incident.subject }}</h1>
+                    <div style="font-size:12px;color:var(--text-4);">
+                        Opened by <span style="color:var(--text-3);">{{ incident.requester.username|default:"unknown" }}</span>
                         · {{ incident.created|date:"M d, Y H:i" }}
-                        {% if incident.time_to_resolve %} · Resolved in <span style="color:#22c55e;">{{ incident.time_to_resolve }}</span>{% endif %}
+                        {% if incident.time_to_resolve %} · Resolved in <span style="color:var(--ok);">{{ incident.time_to_resolve }}</span>{% endif %}
                     </div>
                 </div>
                 <a href="{% url 'edit-incident' incident.id %}" class="btn-ghost" style="flex-shrink:0;padding:5px 12px;font-size:12px;">Edit</a>
@@ -42,33 +42,33 @@
 
         <!-- Description -->
         <div class="card" style="padding:20px;margin-bottom:16px;">
-            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;margin:0 0 12px;">Description</p>
-            <div style="font-size:14px;color:#aaa;line-height:1.7;white-space:pre-wrap;">{{ incident.description }}</div>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin:0 0 12px;">Description</p>
+            <div style="font-size:14px;color:var(--text-2);line-height:1.7;white-space:pre-wrap;">{{ incident.description }}</div>
         </div>
 
         <!-- Thread: comments + activity interleaved -->
         <div class="card" style="margin-bottom:16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2a2a2a;">
-                <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Activity</span>
-                <span style="font-size:12px;color:#444;">{{ comments.count }} comment{{ comments.count|pluralize }}</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
+                <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);">Activity</span>
+                <span style="font-size:12px;color:var(--text-4);">{{ comments.count }} comment{{ comments.count|pluralize }}</span>
             </div>
 
             <!-- Comments -->
             {% for comment in comments %}
-            <div style="padding:16px;border-bottom:1px solid #1a1a1a;{% if comment.is_internal %}background:#0f0e00;border-left:3px solid #f59e0b;{% endif %}">
+            <div style="padding:16px;border-bottom:1px solid var(--bg-2);{% if comment.is_internal %}background:#0f0e00;border-left:3px solid #f59e0b;{% endif %}">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <div style="width:26px;height:26px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#666;flex-shrink:0;">{{ comment.author.username|first|upper }}</div>
-                        <span style="font-size:13px;font-weight:500;color:#ccc;">{{ comment.author.username }}</span>
-                        <span style="font-size:12px;color:#444;">{{ comment.created|date:"M d, Y H:i" }}</span>
+                        <div style="width:26px;height:26px;background:var(--bg-2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-3);flex-shrink:0;">{{ comment.author.username|first|upper }}</div>
+                        <span style="font-size:13px;font-weight:500;color:var(--text-2);">{{ comment.author.username }}</span>
+                        <span style="font-size:12px;color:var(--text-4);">{{ comment.created|date:"M d, Y H:i" }}</span>
                         {% if comment.is_internal %}
-                        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#f59e0b;background:#1a1200;border:1px solid #92400e44;padding:1px 6px;border-radius:3px;">Internal</span>
+                        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--warn);background:#1a1200;border:1px solid #92400e44;padding:1px 6px;border-radius:3px;">Internal</span>
                         {% endif %}
                     </div>
                     {% if request.user == comment.author or request.user.is_staff %}
                     <form method="POST" action="{% url 'delete-comment' incident.id comment.id %}">
                         {% csrf_token %}
-                        <button type="submit" style="background:none;border:none;cursor:pointer;color:#444;font-size:12px;padding:2px 6px;border-radius:3px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#444'" onclick="return confirm('Delete this comment?')">Delete</button>
+                        <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--text-4);font-size:12px;padding:2px 6px;border-radius:3px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#444'" onclick="return confirm('Delete this comment?')">Delete</button>
                     </form>
                     {% endif %}
                 </div>
@@ -82,16 +82,16 @@
 
             <!-- Activity log -->
             {% if activity %}
-            <div style="border-top:1px solid #2a2a2a;">
+            <div style="border-top:1px solid var(--border);">
                 <button onclick="toggleHistory()" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 16px;background:none;border:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#111'" onmouseout="this.style.background='none'">
-                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;">History <span style="color:#333;font-weight:400;">({{ activity|length }} event{{ activity|length|pluralize }})</span></span>
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);">History <span style="color:var(--text-4);font-weight:400;">({{ activity|length }} event{{ activity|length|pluralize }})</span></span>
                     <svg id="history-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 <div id="history-body" style="display:none;padding:4px 16px 12px;">
                     {% for event in activity %}
-                    <div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12px;color:#444;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:12px;color:var(--text-4);">
                         <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;flex-shrink:0;"></div>
-                        <span style="color:#555;">{{ event.user.username|default:"System" }}</span>
+                        <span style="color:var(--text-4);">{{ event.user.username|default:"System" }}</span>
                         <span>{{ event.detail }}</span>
                         <span style="margin-left:auto;white-space:nowrap;">{{ event.created|date:"M d H:i" }}</span>
                     </div>
@@ -101,16 +101,16 @@
             {% endif %}
 
             <!-- Reply box -->
-            <div style="padding:16px;border-top:1px solid #2a2a2a;">
+            <div style="padding:16px;border-top:1px solid var(--border);">
                 <form method="POST" action="{% url 'add-comment' incident.id %}">
                     {% csrf_token %}
                     <div style="display:flex;gap:10px;align-items:flex-start;">
-                        <div style="width:26px;height:26px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#666;flex-shrink:0;margin-top:2px;">{{ request.user.username|first|upper }}</div>
+                        <div style="width:26px;height:26px;background:var(--bg-2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-3);flex-shrink:0;margin-top:2px;">{{ request.user.username|first|upper }}</div>
                         <div style="flex:1;">
                             <textarea id="reply-box" name="content" class="input-base" rows="3" placeholder="Write a reply… (markdown supported)" required></textarea>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-                                <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer;">
-                                    <input type="checkbox" name="is_internal" style="accent-color:#f59e0b;">
+                                <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-4);cursor:pointer;">
+                                    <input type="checkbox" name="is_internal" style="accent-color:var(--warn);">
                                     <span>Internal note (not visible to requester)</span>
                                 </label>
                                 <div style="display:flex;gap:8px;">
@@ -118,7 +118,7 @@
                                     <button type="submit" class="btn-primary" style="padding:5px 12px;font-size:12px;">Post reply</button>
                                 </div>
                             </div>
-                            <div id="reply-preview" class="hidden" style="margin-top:10px;padding:12px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;font-size:14px;color:#aaa;line-height:1.7;"></div>
+                            <div id="reply-preview" class="hidden" style="margin-top:10px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:14px;color:var(--text-2);line-height:1.7;"></div>
                         </div>
                     </div>
                 </form>
@@ -128,11 +128,11 @@
     </div>
 
     <!-- Right sidebar -->
-    <aside style="width:240px;flex-shrink:0;border-left:1px solid #2a2a2a;padding:20px;display:flex;flex-direction:column;gap:20px;">
+    <aside style="width:240px;flex-shrink:0;border-left:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:20px;">
 
         <!-- Quick actions -->
         <div>
-            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Status</p>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin:0 0 10px;">Status</p>
             <select id="qs-status" class="input-base" style="font-size:12px;" onchange="quickUpdate('status', this.value)">
                 {% for val, label in statuses %}
                 <option value="{{ val }}" {% if incident.status == val %}selected{% endif %}>{{ label }}</option>
@@ -141,7 +141,7 @@
         </div>
 
         <div>
-            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Priority</p>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin:0 0 10px;">Priority</p>
             <select id="qs-priority" class="input-base" style="font-size:12px;" onchange="quickUpdate('priority', this.value)">
                 {% for val, label in priorities %}
                 <option value="{{ val }}" {% if incident.priority == val %}selected{% endif %}>{{ label }}</option>
@@ -150,46 +150,46 @@
         </div>
 
         <div>
-            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Assigned to</p>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin:0 0 10px;">Assigned to</p>
             <select id="qs-assigned" class="input-base" style="font-size:12px;" onchange="quickUpdate('assigned_to', this.value)">
                 <option value="">— Unassigned —</option>
                 {% for agent in agents %}
                 <option value="{{ agent.id }}" {% if incident.assigned_to and incident.assigned_to.id == agent.id %}selected{% endif %}>{{ agent.username }}</option>
                 {% endfor %}
             </select>
-            <div id="qs-saved" style="display:none;font-size:11px;color:#22c55e;margin-top:6px;">✓ Saved</div>
+            <div id="qs-saved" style="display:none;font-size:11px;color:var(--ok);margin-top:6px;">✓ Saved</div>
         </div>
 
         <div class="divider"></div>
 
         <!-- Metadata -->
         <div>
-            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#444;margin:0 0 10px;">Details</p>
+            <p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);margin:0 0 10px;">Details</p>
             <div style="display:flex;flex-direction:column;gap:8px;">
                 <div>
-                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Category</div>
-                    <div style="font-size:12px;color:#888;">{{ incident.get_category_display }}</div>
+                    <div style="font-size:11px;color:var(--text-4);margin-bottom:2px;">Category</div>
+                    <div style="font-size:12px;color:var(--text-3);">{{ incident.get_category_display }}</div>
                 </div>
                 <div>
-                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Requester</div>
-                    <div style="font-size:12px;color:#888;">{{ incident.requester.username|default:"—" }}</div>
-                    {% if incident.requester.email %}<div style="font-size:11px;color:#555;">{{ incident.requester.email }}</div>{% endif %}
+                    <div style="font-size:11px;color:var(--text-4);margin-bottom:2px;">Requester</div>
+                    <div style="font-size:12px;color:var(--text-3);">{{ incident.requester.username|default:"—" }}</div>
+                    {% if incident.requester.email %}<div style="font-size:11px;color:var(--text-4);">{{ incident.requester.email }}</div>{% endif %}
                 </div>
                 <div>
-                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Created</div>
-                    <div style="font-size:12px;color:#888;">{{ incident.created|date:"M d, Y" }}</div>
-                    <div style="font-size:11px;color:#555;">{{ incident.created|timesince }} ago</div>
+                    <div style="font-size:11px;color:var(--text-4);margin-bottom:2px;">Created</div>
+                    <div style="font-size:12px;color:var(--text-3);">{{ incident.created|date:"M d, Y" }}</div>
+                    <div style="font-size:11px;color:var(--text-4);">{{ incident.created|timesince }} ago</div>
                 </div>
                 {% if incident.resolved_at %}
                 <div>
-                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Resolved</div>
-                    <div style="font-size:12px;color:#22c55e;">{{ incident.resolved_at|date:"M d, Y H:i" }}</div>
-                    {% if incident.time_to_resolve %}<div style="font-size:11px;color:#555;">in {{ incident.time_to_resolve }}</div>{% endif %}
+                    <div style="font-size:11px;color:var(--text-4);margin-bottom:2px;">Resolved</div>
+                    <div style="font-size:12px;color:var(--ok);">{{ incident.resolved_at|date:"M d, Y H:i" }}</div>
+                    {% if incident.time_to_resolve %}<div style="font-size:11px;color:var(--text-4);">in {{ incident.time_to_resolve }}</div>{% endif %}
                 </div>
                 {% endif %}
                 <div>
-                    <div style="font-size:11px;color:#444;margin-bottom:2px;">Last updated</div>
-                    <div style="font-size:12px;color:#888;">{{ incident.updated|timesince }} ago</div>
+                    <div style="font-size:11px;color:var(--text-4);margin-bottom:2px;">Last updated</div>
+                    <div style="font-size:12px;color:var(--text-3);">{{ incident.updated|timesince }} ago</div>
                 </div>
             </div>
         </div>

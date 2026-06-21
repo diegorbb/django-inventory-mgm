@@ -3,7 +3,7 @@
 {% block content %}
 <div class="p-6" style="max-width:680px;">
     <div style="margin-bottom:20px;">
-        <a href="{% url 'incidents' %}" class="text-xs" style="color:#555;text-decoration:none;">← Incidents</a>
+        <a href="{% url 'incidents' %}" class="text-xs" style="color:var(--text-4);text-decoration:none;">← Incidents</a>
         <h1 class="page-title" style="margin-top:6px;">New incident</h1>
     </div>
 
@@ -11,7 +11,7 @@
         <form method="POST">
             {% csrf_token %}
 
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Details</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Details</p>
             <div class="form-group">
                 <label class="form-label">Subject</label>
                 <input type="text" name="subject" class="input-base" placeholder="Brief description of the issue" required autofocus>
@@ -37,7 +37,7 @@
             </div>
 
             <div class="divider mb-6"></div>
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Assignment</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Assignment</p>
             <div class="grid gap-4 mb-6" style="grid-template-columns:1fr 1fr;">
                 <div class="form-group">
                     <label class="form-label">Status</label>
@@ -58,12 +58,12 @@
             </div>
 
             <div class="divider mb-6"></div>
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Description</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Description</p>
             <div class="form-group mb-6">
                 <textarea name="description" class="input-base" rows="7" placeholder="Describe the issue in detail — include steps to reproduce, error messages, affected systems, etc." required></textarea>
             </div>
 
-            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid var(--border);">
                 <a href="{% url 'incidents' %}" class="btn-ghost">Cancel</a>
                 <button type="submit" class="btn-primary">Create incident</button>
             </div>

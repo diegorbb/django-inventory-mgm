@@ -4,7 +4,7 @@
 <div class="p-6" style="max-width:640px;">
     <div class="page-header">
         <div>
-            <a href="{% url 'asset-detail' asset.id %}" class="text-xs" style="color:#555;text-decoration:none;">← {{ asset.name }}</a>
+            <a href="{% url 'asset-detail' asset.id %}" class="text-xs" style="color:var(--text-4);text-decoration:none;">← {{ asset.name }}</a>
             <h1 class="page-title" style="margin-top:6px;">Edit asset</h1>
         </div>
     </div>
@@ -13,17 +13,17 @@
         <form method="POST">
             {% csrf_token %}
 
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Identity</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Identity</p>
             <div class="grid gap-4 mb-6" style="grid-template-columns:1fr 1fr;">
                 <div class="form-group">
                     <label class="form-label">Name</label>
                     <input type="text" name="name" value="{{ form.instance.name }}" class="input-base" required>
-                    {% if form.name.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.name.errors.0 }}</p>{% endif %}
+                    {% if form.name.errors %}<p style="color:var(--danger);font-size:12px;margin-top:4px;">{{ form.name.errors.0 }}</p>{% endif %}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Asset tag</label>
                     <input type="text" name="tag" value="{{ form.instance.tag }}" class="input-base" required>
-                    {% if form.tag.errors %}<p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ form.tag.errors.0 }}</p>{% endif %}
+                    {% if form.tag.errors %}<p style="color:var(--danger);font-size:12px;margin-top:4px;">{{ form.tag.errors.0 }}</p>{% endif %}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Model</label>
@@ -40,7 +40,7 @@
             </div>
 
             <div class="divider mb-6"></div>
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Status &amp; location</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Status &amp; location</p>
             <div class="grid gap-4 mb-6" style="grid-template-columns:1fr 1fr;">
                 <div class="form-group">
                     <label class="form-label">Status</label>
@@ -65,7 +65,7 @@
             </div>
 
             <div class="divider mb-6"></div>
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Dates</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Dates</p>
             <div class="grid gap-4 mb-6" style="grid-template-columns:1fr 1fr;">
                 <div class="form-group">
                     <label class="form-label">Purchase date</label>
@@ -77,7 +77,7 @@
                 </div>
             </div>
 
-            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid var(--border);">
                 <a href="{% url 'asset-detail' asset.id %}" class="btn-ghost">Cancel</a>
                 <button type="submit" class="btn-primary">Save changes</button>
             </div>

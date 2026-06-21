@@ -8,11 +8,11 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
             </div>
             <div>
-                <div style="font-size:15px;font-weight:600;color:#e5e5e5;">Delete "{{ obj }}"?</div>
-                <div style="font-size:13px;color:#555;margin-top:2px;">This cannot be undone.</div>
+                <div style="font-size:15px;font-weight:600;color:var(--text);">Delete "{{ obj }}"?</div>
+                <div style="font-size:13px;color:var(--text-4);margin-top:2px;">This cannot be undone.</div>
             </div>
         </div>
-        <form method="POST" style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid #2a2a2a;">
+        <form method="POST" style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);">
             {% csrf_token %}
             <a href="{% url 'software-list' %}" class="btn-ghost">Cancel</a>
             <button type="submit" class="btn-danger">Delete</button>

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="p-6" style="max-width:680px;">
     <div style="margin-bottom:20px;">
-        <a href="{% url 'incident' incident.id %}" class="text-xs" style="color:#555;text-decoration:none;">← #{{ incident.id }} {{ incident.subject|truncatechars:40 }}</a>
+        <a href="{% url 'incident' incident.id %}" class="text-xs" style="color:var(--text-4);text-decoration:none;">← #{{ incident.id }} {{ incident.subject|truncatechars:40 }}</a>
         <h1 class="page-title" style="margin-top:6px;">Edit incident</h1>
     </div>
 
@@ -11,7 +11,7 @@
         <form method="POST">
             {% csrf_token %}
 
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Details</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Details</p>
             <div class="form-group">
                 <label class="form-label">Subject</label>
                 <input type="text" name="subject" value="{{ incident.subject }}" class="input-base" required>
@@ -37,7 +37,7 @@
             </div>
 
             <div class="divider mb-6"></div>
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Assignment</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Assignment</p>
             <div class="grid gap-4 mb-6" style="grid-template-columns:1fr 1fr;">
                 <div class="form-group">
                     <label class="form-label">Status</label>
@@ -60,12 +60,12 @@
             </div>
 
             <div class="divider mb-6"></div>
-            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:#555;">Description</p>
+            <p class="text-xs font-medium uppercase tracking-widest mb-4" style="color:var(--text-4);">Description</p>
             <div class="form-group mb-6">
                 <textarea name="description" class="input-base" rows="8" required>{{ incident.description }}</textarea>
             </div>
 
-            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid #2a2a2a;">
+            <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid var(--border);">
                 <a href="{% url 'incident' incident.id %}" class="btn-ghost">Cancel</a>
                 <button type="submit" class="btn-primary">Save changes</button>
             </div>

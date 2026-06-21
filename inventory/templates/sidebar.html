@@ -1,6 +1,6 @@
-<aside class="fixed top-12 left-0 bottom-0 w-52 flex flex-col border-r overflow-y-auto" style="background:#0a0a0a;border-color:#2a2a2a;">
-    <nav class="flex-1 p-3 space-y-0.5">
-        <p class="text-xs uppercase tracking-widest mb-2 mt-1 px-2" style="color:#444;">Main</p>
+<aside style="position:fixed;top:48px;left:0;bottom:0;width:208px;display:flex;flex-direction:column;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg);">
+    <nav style="flex:1;padding:12px;display:flex;flex-direction:column;gap:2px;">
+        <p style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-4);padding:6px 8px 4px;margin:0;">Main</p>
         <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             Dashboard
@@ -22,19 +22,19 @@
             Software
         </a>
         {% if user.is_staff %}
-        <div class="divider" style="margin:10px 0;"></div>
-        <p class="text-xs uppercase tracking-widest mb-2 px-2" style="color:#444;">Admin</p>
+        <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+        <p style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-4);padding:2px 8px 4px;margin:0;">Admin</p>
         <a href="{% url 'users' %}" class="sidebar-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             Users
         </a>
         {% endif %}
     </nav>
-    <div class="p-3 border-t" style="border-color:#2a2a2a;">
+    <div style="padding:12px;border-top:1px solid var(--border);">
         {% if user.is_authenticated %}
         <form method="POST" action="{% url 'logout' %}">
             {% csrf_token %}
-            <button type="submit" class="sidebar-link w-full" style="border:none;background:none;cursor:pointer;width:100%;">
+            <button type="submit" class="sidebar-link" style="border:none;background:none;cursor:pointer;width:100%;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Log out
             </button>

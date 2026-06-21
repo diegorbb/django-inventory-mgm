@@ -9,7 +9,7 @@
         </div>
         <div class="flex items-center gap-3">
             <form method="GET" style="position:relative;">
-                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#555;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-4);" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" name="search" value="{{ search_query }}" placeholder="Search items…" class="input-base" style="padding-left:32px;width:220px;">
             </form>
             <a href="{% url 'create-item' %}" class="btn-primary">+ Add item</a>
@@ -33,12 +33,12 @@
             <tbody>
                 {% for item in items %}
                 <tr>
-                    <td style="color:#e5e5e5;font-weight:500;">{{ item.name }}</td>
+                    <td style="color:var(--text);font-weight:500;">{{ item.name }}</td>
                     <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ item.description|default:"—" }}</td>
                     <td>{{ item.location }}</td>
                     <td>
                         {% if item.min_qty and item.qty <= item.min_qty %}
-                        <span style="color:#ef4444;font-weight:500;">{{ item.qty }}</span>
+                        <span style="color:var(--danger);font-weight:500;">{{ item.qty }}</span>
                         {% else %}
                         {{ item.qty|default:"—" }}
                         {% endif %}
@@ -47,7 +47,7 @@
                     <td>{{ item.updated_by.username|default:"—" }}</td>
                     <td style="text-align:right;">
                         <a href="{% url 'edit-item' item.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;margin-right:6px;">Edit</a>
-                        <a href="{% url 'delete-item' item.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;color:#ef4444;border-color:#991b1b44;">Delete</a>
+                        <a href="{% url 'delete-item' item.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--danger);border-color:#991b1b44;">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -57,7 +57,7 @@
         <div class="empty-state">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
             <h3>No items found</h3>
-            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-item' %}" style="color:#3b82f6;">Add your first item</a>{% endif %}</p>
+            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-item' %}" style="color:var(--brand);">Add your first item</a>{% endif %}</p>
         </div>
         {% endif %}
     </div>

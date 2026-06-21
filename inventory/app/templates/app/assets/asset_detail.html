@@ -5,17 +5,17 @@
 
     <!-- Breadcrumb + actions -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#555;">
-            <a href="{% url 'assets' %}" style="color:#555;text-decoration:none;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">Assets</a>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-4);">
+            <a href="{% url 'assets' %}" style="color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">Assets</a>
             <span>/</span>
-            <span style="color:#888;">{{ asset.name }}</span>
+            <span style="color:var(--text-3);">{{ asset.name }}</span>
         </div>
         <div style="display:flex;gap:8px;">
             <a href="{% url 'edit-asset' asset.id %}" class="btn-ghost">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Edit
             </a>
-            <a href="{% url 'delete-asset' asset.id %}" class="btn-ghost" style="color:#ef4444;border-color:#991b1b44;">
+            <a href="{% url 'delete-asset' asset.id %}" class="btn-ghost" style="color:var(--danger);border-color:#991b1b44;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                 Delete
             </a>
@@ -24,12 +24,12 @@
 
     <!-- Hero row -->
     <div class="card" style="padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;">
-        <div style="width:52px;height:52px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <div style="width:52px;height:52px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
         <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                <h1 style="font-size:20px;font-weight:600;color:#e5e5e5;margin:0;">{{ asset.name }}</h1>
+                <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0;">{{ asset.name }}</h1>
                 {% if asset.status == 'Active' %}
                 <span class="badge badge-active">Active</span>
                 {% else %}
@@ -40,21 +40,21 @@
                 {% endif %}
             </div>
             <div style="display:flex;gap:20px;margin-top:8px;flex-wrap:wrap;">
-                <span style="font-size:12px;color:#555;">
-                    <span style="color:#444;">Model</span>&ensp;
-                    <span style="color:#888;">{{ asset.model }}</span>
+                <span style="font-size:12px;color:var(--text-4);">
+                    <span style="color:var(--text-4);">Model</span>&ensp;
+                    <span style="color:var(--text-3);">{{ asset.model }}</span>
                 </span>
-                <span style="font-size:12px;color:#555;">
-                    <span style="color:#444;">Tag</span>&ensp;
-                    <span style="color:#888;font-family:monospace;">{{ asset.tag }}</span>
+                <span style="font-size:12px;color:var(--text-4);">
+                    <span style="color:var(--text-4);">Tag</span>&ensp;
+                    <span style="color:var(--text-3);font-family:monospace;">{{ asset.tag }}</span>
                 </span>
-                <span style="font-size:12px;color:#555;">
-                    <span style="color:#444;">Type</span>&ensp;
-                    <span style="color:#888;">{{ asset.hardware }}</span>
+                <span style="font-size:12px;color:var(--text-4);">
+                    <span style="color:var(--text-4);">Type</span>&ensp;
+                    <span style="color:var(--text-3);">{{ asset.hardware }}</span>
                 </span>
-                <span style="font-size:12px;color:#555;">
-                    <span style="color:#444;">Location</span>&ensp;
-                    <span style="color:#888;">{{ asset.location }}</span>
+                <span style="font-size:12px;color:var(--text-4);">
+                    <span style="color:var(--text-4);">Location</span>&ensp;
+                    <span style="color:var(--text-3);">{{ asset.location }}</span>
                 </span>
             </div>
         </div>
@@ -68,33 +68,33 @@
 
             <!-- Hardware specs -->
             <div class="card">
-                <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;">
-                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Hardware specs</span>
+                <div style="padding:12px 16px;border-bottom:1px solid var(--bg-2);">
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);">Hardware specs</span>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
-                    <div style="padding:14px 16px;border-bottom:1px solid #1a1a1a;border-right:1px solid #1a1a1a;">
+                    <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);border-right:1px solid var(--bg-2);">
                         <div class="form-label">Serial number</div>
-                        <div style="font-size:13px;color:#ccc;font-family:monospace;margin-top:2px;">{{ asset.serial }}</div>
+                        <div style="font-size:13px;color:var(--text-2);font-family:monospace;margin-top:2px;">{{ asset.serial }}</div>
                     </div>
-                    <div style="padding:14px 16px;border-bottom:1px solid #1a1a1a;">
+                    <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);">
                         <div class="form-label">Hardware type</div>
-                        <div style="font-size:13px;color:#ccc;margin-top:2px;">{{ asset.hardware }}</div>
+                        <div style="font-size:13px;color:var(--text-2);margin-top:2px;">{{ asset.hardware }}</div>
                     </div>
-                    <div style="padding:14px 16px;border-bottom:1px solid #1a1a1a;border-right:1px solid #1a1a1a;">
+                    <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);border-right:1px solid var(--bg-2);">
                         <div class="form-label">Model</div>
-                        <div style="font-size:13px;color:#ccc;margin-top:2px;">{{ asset.model }}</div>
+                        <div style="font-size:13px;color:var(--text-2);margin-top:2px;">{{ asset.model }}</div>
                     </div>
-                    <div style="padding:14px 16px;border-bottom:1px solid #1a1a1a;">
+                    <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);">
                         <div class="form-label">Location</div>
-                        <div style="font-size:13px;color:#ccc;margin-top:2px;">{{ asset.location }}</div>
+                        <div style="font-size:13px;color:var(--text-2);margin-top:2px;">{{ asset.location }}</div>
                     </div>
-                    <div style="padding:14px 16px;border-right:1px solid #1a1a1a;">
+                    <div style="padding:14px 16px;border-right:1px solid var(--bg-2);">
                         <div class="form-label">Purchase date</div>
-                        <div style="font-size:13px;color:#ccc;margin-top:2px;">{{ asset.purchase_date|date:"M d, Y" }}</div>
+                        <div style="font-size:13px;color:var(--text-2);margin-top:2px;">{{ asset.purchase_date|date:"M d, Y" }}</div>
                     </div>
                     <div style="padding:14px 16px;">
                         <div class="form-label">Warranty expiry</div>
-                        <div style="font-size:13px;margin-top:2px;{% if asset.warranty < today %}color:#ef4444;{% else %}color:#ccc;{% endif %}">
+                        <div style="font-size:13px;margin-top:2px;{% if asset.warranty < today %}color:var(--danger);{% else %}color:var(--text-2);{% endif %}">
                             {{ asset.warranty|date:"M d, Y" }}
                             {% if asset.warranty < today %}
                             <span style="font-size:11px;margin-left:4px;opacity:.7;">(expired)</span>
@@ -111,26 +111,26 @@
 
             <!-- Current assignee -->
             <div class="card">
-                <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;">
-                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Assigned to</span>
+                <div style="padding:12px 16px;border-bottom:1px solid var(--bg-2);">
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);">Assigned to</span>
                 </div>
                 <div style="padding:16px;">
                     {% if asset.assigned_to %}
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-                        <div style="width:38px;height:38px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#666;flex-shrink:0;">
+                        <div style="width:38px;height:38px;background:var(--bg-2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--text-3);flex-shrink:0;">
                             {{ asset.assigned_to.username|first|upper }}
                         </div>
                         <div>
-                            <div style="font-size:14px;font-weight:500;color:#e5e5e5;">{{ asset.assigned_to.username }}</div>
-                            <div style="font-size:12px;color:#555;margin-top:2px;">{{ asset.assigned_to.email|default:"no email set" }}</div>
+                            <div style="font-size:14px;font-weight:500;color:var(--text);">{{ asset.assigned_to.username }}</div>
+                            <div style="font-size:12px;color:var(--text-4);margin-top:2px;">{{ asset.assigned_to.email|default:"no email set" }}</div>
                         </div>
                     </div>
                     {% else %}
-                    <div style="display:flex;align-items:center;gap:10px;padding:12px;background:#0a0a0a;border-radius:6px;border:1px solid #222;margin-bottom:16px;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:6px;border:1px solid #222;margin-bottom:16px;">
                         <div style="width:34px;height:34px;background:#151515;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                         </div>
-                        <span style="font-size:13px;color:#555;">Unassigned</span>
+                        <span style="font-size:13px;color:var(--text-4);">Unassigned</span>
                     </div>
                     {% endif %}
 
@@ -161,17 +161,17 @@
 
             <!-- Quick facts -->
             <div class="card">
-                <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;">
-                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;">Quick facts</span>
+                <div style="padding:12px 16px;border-bottom:1px solid var(--bg-2);">
+                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);">Quick facts</span>
                 </div>
                 <div style="padding:0;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #1a1a1a;">
-                        <span style="font-size:12px;color:#555;">Status</span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--bg-2);">
+                        <span style="font-size:12px;color:var(--text-4);">Status</span>
                         {% if asset.status == 'Active' %}<span class="badge badge-active">Active</span>
                         {% else %}<span class="badge badge-inactive">Inactive</span>{% endif %}
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #1a1a1a;">
-                        <span style="font-size:12px;color:#555;">Warranty</span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--bg-2);">
+                        <span style="font-size:12px;color:var(--text-4);">Warranty</span>
                         {% if asset.warranty < today %}
                         <span class="badge badge-high">Expired</span>
                         {% else %}
@@ -179,8 +179,8 @@
                         {% endif %}
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;">
-                        <span style="font-size:12px;color:#555;">Asset tag</span>
-                        <span style="font-size:12px;color:#888;font-family:monospace;">{{ asset.tag }}</span>
+                        <span style="font-size:12px;color:var(--text-4);">Asset tag</span>
+                        <span style="font-size:12px;color:var(--text-3);font-family:monospace;">{{ asset.tag }}</span>
                     </div>
                 </div>
             </div>

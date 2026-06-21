@@ -26,15 +26,15 @@
                 <tr>
                     <td>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div style="width:26px;height:26px;background:#222;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#888;flex-shrink:0;">{{ u.username|first|upper }}</div>
-                            <span style="color:#e5e5e5;font-weight:500;">{{ u.username }}</span>
+                            <div style="width:26px;height:26px;background:var(--bg-3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-3);flex-shrink:0;">{{ u.username|first|upper }}</div>
+                            <span style="color:var(--text);font-weight:500;">{{ u.username }}</span>
                         </div>
                     </td>
                     <td>{{ u.email|default:"—" }}</td>
                     <td>
                         {% if u.is_superuser %}<span class="badge" style="background:#1a0a2e;color:#a855f7;border:1px solid #6b21a844;">Admin</span>
                         {% elif u.is_staff %}<span class="badge badge-low">Staff</span>
-                        {% else %}<span class="badge" style="background:#1a1a1a;color:#888;border:1px solid #333;">User</span>{% endif %}
+                        {% else %}<span class="badge" style="background:var(--bg-2);color:var(--text-3);border:1px solid #333;">User</span>{% endif %}
                     </td>
                     <td>{{ u.date_joined|date:"M d, Y" }}</td>
                     <td>
