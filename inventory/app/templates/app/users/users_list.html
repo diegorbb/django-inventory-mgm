@@ -2,23 +2,60 @@
 {% block title %}Users — InvMgm{% endblock %}
 {% block content %}
 <div class="p-6">
+
     <div class="page-header">
         <div>
             <h1 class="page-title">Users</h1>
-            <p class="page-subtitle">{{ users|length }} user{{ users|length|pluralize }}</p>
+            <p class="page-subtitle">Manage accounts and access</p>
         </div>
         <a href="{% url 'create-user' %}" class="btn-primary">+ Add user</a>
     </div>
 
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;max-width:480px;">
+        <div class="stat-card" style="padding:14px 16px;">
+            <div class="stat-value" style="font-size:22px;">{{ total }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card" style="padding:14px 16px;">
+            <div class="stat-value" style="font-size:22px;color:var(--ok);">{{ active }}</div>
+            <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-card" style="padding:14px 16px;">
+            <div class="stat-value" style="font-size:22px;color:var(--brand);">{{ staff_count }}</div>
+            <div class="stat-label">Staff / Admin</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" style="display:flex;gap:8px;margin-bottom:16px;">
+        <div style="position:relative;flex:1;max-width:320px;">
+            <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-4);" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search users…" class="input-base" style="padding-left:32px;">
+        </div>
+        <select name="role" onchange="this.form.submit()" class="input-base" style="width:auto;">
+            <option value="" {% if not role_filter %}selected{% endif %}>All roles</option>
+            <option value="user"  {% if role_filter == 'user' %}selected{% endif %}>Users</option>
+            <option value="staff" {% if role_filter == 'staff' %}selected{% endif %}>Staff</option>
+            <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admins</option>
+        </select>
+        {% if search_query or role_filter %}
+        <a href="{% url 'users' %}" class="btn-ghost">Clear</a>
+        {% endif %}
+    </form>
+
     <div class="card">
+        {% if users %}
         <table class="table-base">
             <thead>
                 <tr>
-                    <th>Username</th>
+                    <th>User</th>
                     <th>Email</th>
                     <th>Role</th>
-                    <th>Joined</th>
                     <th>Status</th>
+                    <th>Joined</th>
+                    <th>Last login</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -26,25 +63,70 @@
                 <tr>
                     <td>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div style="width:26px;height:26px;background:var(--bg-3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-3);flex-shrink:0;">{{ u.username|first|upper }}</div>
-                            <span style="color:var(--text);font-weight:500;">{{ u.username }}</span>
+                            <div style="width:30px;height:30px;background:var(--bg-2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-3);flex-shrink:0;">{{ u.username|first|upper }}</div>
+                            <div>
+                                <div style="font-size:13px;font-weight:500;color:var(--text);">{{ u.username }}{% if u == request.user %} <span style="font-size:10px;color:var(--text-4);">(you)</span>{% endif %}</div>
+                                {% if u.get_full_name %}<div style="font-size:11px;color:var(--text-4);">{{ u.get_full_name }}</div>{% endif %}
+                            </div>
                         </div>
                     </td>
-                    <td>{{ u.email|default:"—" }}</td>
+                    <td style="font-size:12px;">{{ u.email|default:"—" }}</td>
                     <td>
-                        {% if u.is_superuser %}<span class="badge" style="background:#1a0a2e;color:#a855f7;border:1px solid #6b21a844;">Admin</span>
-                        {% elif u.is_staff %}<span class="badge badge-low">Staff</span>
-                        {% else %}<span class="badge" style="background:var(--bg-2);color:var(--text-3);border:1px solid #333;">User</span>{% endif %}
+                        {% if u.is_superuser %}
+                        <span class="badge" style="background:var(--brand-bg);color:var(--brand);border:1px solid var(--badge-low-border);">Admin</span>
+                        {% elif u.is_staff %}
+                        <span class="badge badge-low">Staff</span>
+                        {% else %}
+                        <span class="badge badge-inactive">User</span>
+                        {% endif %}
                     </td>
-                    <td>{{ u.date_joined|date:"M d, Y" }}</td>
                     <td>
-                        {% if u.is_active %}<span class="badge badge-active">Active</span>
-                        {% else %}<span class="badge badge-inactive">Inactive</span>{% endif %}
+                        <button onclick="toggleStatus({{ u.id }}, this)" style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;padding:0;{% if u == request.user %}opacity:.4;cursor:not-allowed;{% endif %}" {% if u == request.user %}disabled title="Can't deactivate yourself"{% endif %}>
+                            <span id="status-dot-{{ u.id }}" style="width:7px;height:7px;border-radius:50%;background:{% if u.is_active %}var(--ok){% else %}var(--text-4){% endif %};flex-shrink:0;"></span>
+                            <span id="status-label-{{ u.id }}" style="font-size:12px;color:{% if u.is_active %}var(--ok){% else %}var(--text-4){% endif %};">{% if u.is_active %}Active{% else %}Inactive{% endif %}</span>
+                        </button>
+                    </td>
+                    <td style="font-size:12px;color:var(--text-4);">{{ u.date_joined|date:"M d, Y" }}</td>
+                    <td style="font-size:12px;color:var(--text-4);">{{ u.last_login|date:"M d, Y"|default:"Never" }}</td>
+                    <td style="text-align:right;">
+                        <a href="{% url 'edit-user' u.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;margin-right:4px;">Edit</a>
+                        {% if u != request.user %}
+                        <a href="{% url 'delete-user' u.id %}" class="btn-ghost" style="padding:4px 10px;font-size:12px;color:var(--danger);border-color:var(--danger-border);">Delete</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <div class="empty-state">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <h3>No users found</h3>
+            <p>{% if search_query %}No results for "{{ search_query }}"{% else %}<a href="{% url 'create-user' %}" style="color:var(--brand);">Create first user</a>{% endif %}</p>
+        </div>
+        {% endif %}
     </div>
 </div>
+
+<script>
+function toggleStatus(uid, btn) {
+    fetch('/users/' + uid + '/toggle-status/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}'}
+    }).then(r => r.json()).then(data => {
+        if (!data.success) { alert(data.error); return; }
+        var dot   = document.getElementById('status-dot-'   + uid);
+        var label = document.getElementById('status-label-' + uid);
+        if (data.is_active) {
+            dot.style.background   = 'var(--ok)';
+            label.style.color      = 'var(--ok)';
+            label.textContent      = 'Active';
+        } else {
+            dot.style.background   = 'var(--text-4)';
+            label.style.color      = 'var(--text-4)';
+            label.textContent      = 'Inactive';
+        }
+    });
+}
+</script>
 {% endblock %}

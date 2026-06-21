@@ -484,9 +484,33 @@ def profile(request):
 
 @login_required(login_url='login')
 @staff_member_required
+@login_required(login_url='login')
+@staff_member_required
 def users_list(request):
-    users = User.objects.all()
-    context = {'users': users}
+    search_query = request.GET.get('search', '')
+    role_filter = request.GET.get('role', '')
+    users = User.objects.all().order_by('username')
+    if search_query:
+        users = users.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
+        )
+    if role_filter == 'staff':
+        users = users.filter(is_staff=True, is_superuser=False)
+    elif role_filter == 'admin':
+        users = users.filter(is_superuser=True)
+    elif role_filter == 'user':
+        users = users.filter(is_staff=False, is_superuser=False)
+    context = {
+        'users': users,
+        'search_query': search_query,
+        'role_filter': role_filter,
+        'total': User.objects.count(),
+        'active': User.objects.filter(is_active=True).count(),
+        'staff_count': User.objects.filter(is_staff=True).count(),
+    }
     return render(request, 'app/users/users_list.html', context)
 
 
@@ -505,6 +529,67 @@ def create_user(request):
         form = CustomUserCreationForm()
     
     return render(request, 'app/users/create_user.html', {'form': form})
+
+
+@login_required(login_url='login')
+@staff_member_required
+def edit_user(request, user_id):
+    target = get_object_or_404(User, id=user_id)
+    # Prevent non-superusers from editing superusers
+    if target.is_superuser and not request.user.is_superuser:
+        messages.error(request, 'Only admins can edit other admins.')
+        return redirect('users')
+    if request.method == 'POST':
+        target.first_name = request.POST.get('first_name', '').strip()
+        target.last_name  = request.POST.get('last_name', '').strip()
+        target.email      = request.POST.get('email', '').strip()
+        # Only superusers can change staff/admin flags
+        if request.user.is_superuser:
+            target.is_staff     = request.POST.get('is_staff') == 'on'
+            target.is_superuser = request.POST.get('is_superuser') == 'on'
+            if target.is_superuser:
+                target.is_staff = True
+        new_pw = request.POST.get('new_password', '').strip()
+        if new_pw:
+            target.set_password(new_pw)
+        target.save()
+        messages.success(request, f'{target.username} updated.')
+        return redirect('users')
+    context = {'target': target}
+    return render(request, 'app/users/edit_user.html', context)
+
+
+@login_required(login_url='login')
+@staff_member_required
+def delete_user(request, user_id):
+    target = get_object_or_404(User, id=user_id)
+    if target == request.user:
+        messages.error(request, 'You cannot delete your own account.')
+        return redirect('users')
+    if target.is_superuser and not request.user.is_superuser:
+        messages.error(request, 'Only admins can delete other admins.')
+        return redirect('users')
+    if request.method == 'POST':
+        username = target.username
+        target.delete()
+        messages.success(request, f'User {username} deleted.')
+        return redirect('users')
+    return render(request, 'app/users/delete_user.html', {'target': target})
+
+
+@login_required(login_url='login')
+@staff_member_required
+@require_POST
+def toggle_user_status(request, user_id):
+    target = get_object_or_404(User, id=user_id)
+    if target == request.user:
+        return JsonResponse({'success': False, 'error': 'Cannot deactivate yourself'})
+    if target.is_superuser and not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Only admins can change admin status'})
+    target.is_active = not target.is_active
+    target.save()
+    return JsonResponse({'success': True, 'is_active': target.is_active})
+
 
 @login_required(login_url='login')
 def asset_list(request):
