@@ -1,30 +1,61 @@
 {% extends "main.html" %}
 {% block title %}{{ software.name }} — InvMgm{% endblock %}
 {% block content %}
-<div class="p-6" style="max-width:960px;">
 
-    <!-- Breadcrumb + actions -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-4);">
-            <a href="{% url 'software-list' %}" style="color:var(--text-4);text-decoration:none;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">Software</a>
-            <span>/</span>
-            <span style="color:var(--text-3);">{{ software.name }}</span>
+<style>
+.tab-link{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:13px;color:#666;border-radius:5px;margin-bottom:2px;transition:all .15s;width:100%;text-align:left;background:none;border:none;cursor:pointer;}
+.tab-link:hover{color:#ccc;background:#1a1a1a;}
+.tab-link.active{color:#e5e5e5;background:#1a1a1a;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+.prop-row{display:flex;align-items:flex-start;padding:10px 0;border-bottom:1px solid #111;}
+.prop-row:last-child{border-bottom:none;}
+.prop-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#555;width:80px;flex-shrink:0;padding-top:3px;}
+.prop-value{font-size:12px;color:#ccc;flex:1;min-width:0;}
+.section-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;margin:0 0 14px;}
+.field-grid{display:grid;grid-template-columns:160px 1fr;gap:0;}
+.field-row{display:contents;}
+.field-row>div{padding:11px 16px;border-bottom:1px solid #111;}
+.field-row>div:first-child{color:#666;font-size:12px;border-right:1px solid #111;}
+.field-row>div:last-child{color:#ccc;font-size:13px;}
+.tab-strip-btn{padding:8px 18px;font-size:13px;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;}
+</style>
+
+<!-- Top nav bar -->
+<div style="border-bottom:1px solid #1a1a1a;background:#0a0a0a;padding:0 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;height:48px;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:13px;">
+            <a href="{% url 'software-list' %}" style="color:#555;text-decoration:none;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">Software</a>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <span style="color:#ccc;">{{ software.name }}</span>
         </div>
-        <a href="{% url 'delete-software' software.id %}" class="btn-ghost" style="color:var(--danger);border-color:#991b1b44;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-            Delete
-        </a>
+        <div style="display:flex;gap:8px;">
+            <button onclick="switchTab('licenses');toggleEdit()" class="btn-ghost" style="padding:5px 12px;font-size:12px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+            </button>
+            <a href="{% url 'delete-software' software.id %}" class="btn-ghost" style="padding:5px 12px;font-size:12px;color:#ef4444;border-color:#991b1b44;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Delete
+            </a>
+        </div>
     </div>
+</div>
 
-    <!-- Hero -->
-    <div class="card" style="padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;">
-        <div style="width:52px;height:52px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+<!-- Title band -->
+<div style="padding:20px 24px 0;border-bottom:1px solid #1a1a1a;">
+    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+
+        <!-- Icon -->
+        <div style="width:52px;height:52px;background:#0f1a2e;border:1px solid #1d3a5a;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         </div>
+
+        <!-- Name + meta -->
         <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                <h1 style="font-size:20px;font-weight:600;color:var(--text);margin:0;">{{ software.name }}</h1>
-                <span class="badge" style="background:var(--bg-2);color:var(--text-3);border:1px solid #333;">{{ software.get_license_type_display }}</span>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+                <h1 style="font-size:20px;font-weight:600;color:#e5e5e5;margin:0;">{{ software.name }}</h1>
+                <span class="badge" style="background:#0f1a2e;color:#3b82f6;border:1px solid #1d3a5a;">{{ software.get_license_type_display }}</span>
                 {% if software.expiry_date and software.expiry_date < today %}
                 <span class="badge badge-high">License expired</span>
                 {% endif %}
@@ -32,89 +63,199 @@
                 <span class="badge badge-high">Over seat limit</span>
                 {% endif %}
             </div>
-            <div style="display:flex;gap:20px;margin-top:8px;flex-wrap:wrap;">
-                {% if software.publisher %}<span style="font-size:12px;"><span style="color:var(--text-4);">Publisher</span>&ensp;<span style="color:var(--text-3);">{{ software.publisher }}</span></span>{% endif %}
-                <span style="font-size:12px;"><span style="color:var(--text-4);">Version</span>&ensp;<span style="color:var(--text-3);font-family:monospace;">{{ software.version }}</span></span>
-                {% if software.category %}<span style="font-size:12px;"><span style="color:var(--text-4);">Category</span>&ensp;<span style="color:var(--text-3);">{{ software.category }}</span></span>{% endif %}
-                <span style="font-size:12px;"><span style="color:var(--text-4);">Updated</span>&ensp;<span style="color:var(--text-3);">{{ software.updated|date:"M d, Y" }}</span></span>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                {% if software.publisher %}
+                <span style="font-size:12px;"><span style="color:#444;">Publisher</span>&ensp;<span style="color:#777;">{{ software.publisher }}</span></span>
+                {% endif %}
+                <span style="font-size:12px;"><span style="color:#444;">Version</span>&ensp;<span style="color:#777;font-family:monospace;">{{ software.version }}</span></span>
+                {% if software.category %}
+                <span style="font-size:12px;"><span style="color:#444;">Category</span>&ensp;<span style="color:#777;">{{ software.category }}</span></span>
+                {% endif %}
+                <span style="font-size:12px;"><span style="color:#444;">Updated</span>&ensp;<span style="color:#555;">{{ software.updated|timesince }} ago</span></span>
             </div>
         </div>
-        <!-- Seat usage -->
-        <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:28px;font-weight:600;color:{% if software.is_over_limit %}#ef4444{% else %}#e5e5e5{% endif %};">{{ software.seats_used }}<span style="font-size:16px;color:var(--text-4);font-weight:400;">/{{ software.license_count }}</span></div>
-            <div style="font-size:11px;color:var(--text-4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">seats used</div>
-            <div style="width:120px;height:4px;background:var(--bg-3);border-radius:2px;margin-top:8px;overflow:hidden;">
+
+        <!-- Seat gauge -->
+        <div style="flex-shrink:0;text-align:right;padding:4px 0;">
+            <div style="font-size:30px;font-weight:700;letter-spacing:-1px;color:{% if software.is_over_limit %}#ef4444{% else %}#e5e5e5{% endif %};line-height:1;">
+                {{ software.seats_used }}<span style="font-size:16px;color:#444;font-weight:400;">/{{ software.license_count }}</span>
+            </div>
+            <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.07em;margin-top:4px;">seats used</div>
+            <div style="width:120px;height:5px;background:#1a1a1a;border-radius:3px;margin-top:8px;overflow:hidden;">
                 {% if software.license_count > 0 %}
-                <div style="height:100%;width:{% widthratio software.seats_used software.license_count 100 %}%;background:{% if software.is_over_limit %}#ef4444{% elif software.seats_used == software.license_count %}#f59e0b{% else %}#22c55e{% endif %};border-radius:2px;"></div>
+                <div style="height:100%;width:{% widthratio software.seats_used software.license_count 100 %}%;background:{% if software.is_over_limit %}#ef4444{% elif software.seats_used == software.license_count %}#f59e0b{% else %}#22c55e{% endif %};border-radius:3px;transition:width .4s;"></div>
                 {% endif %}
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:#444;">
+                <span>{{ software.seats_used }} used</span>
+                <span>{{ software.seats_available }} free</span>
             </div>
         </div>
     </div>
 
-    <!-- Two column -->
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;">
+    <!-- Tab strip -->
+    <div style="display:flex;gap:0;">
+        <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-strip-btn" style="color:#e5e5e5;border-bottom-color:#3b82f6;">Overview</button>
+        <button onclick="switchTab('licenses')" id="tab-btn-licenses" class="tab-strip-btn" style="color:#555;">
+            Licenses
+        </button>
+        <button onclick="switchTab('users')" id="tab-btn-users" class="tab-strip-btn" style="color:#555;">
+            Users
+            <span style="margin-left:5px;font-size:11px;background:#1a1a1a;color:#666;padding:1px 7px;border-radius:10px;border:1px solid #2a2a2a;">{{ software.seats_used }}</span>
+        </button>
+    </div>
+</div>
 
-        <!-- Left -->
-        <div style="display:flex;flex-direction:column;gap:16px;">
+<!-- Three-column body -->
+<div style="display:grid;grid-template-columns:180px 1fr 240px;min-height:calc(100vh - 185px);">
 
-            <!-- Edit details inline -->
-            <div class="card">
-                <div style="padding:12px 16px;border-bottom:1px solid var(--bg-2);display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);">License details</span>
-                    <button id="edit-toggle" onclick="toggleEdit()" class="btn-ghost" style="padding:3px 10px;font-size:12px;">Edit</button>
+    <!-- Left nav -->
+    <div style="border-right:1px solid #1a1a1a;padding:16px 10px;">
+        <p style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#333;padding:0 6px;margin:0 0 8px;">License info</p>
+        <button onclick="switchTab('overview')" id="leftnav-overview" class="tab-link active">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Overview
+        </button>
+        <button onclick="switchTab('licenses')" id="leftnav-licenses" class="tab-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Licenses
+        </button>
+        <button onclick="switchTab('users')" id="leftnav-users" class="tab-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Users
+        </button>
+
+        {% if software.notes %}
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #1a1a1a;">
+            <p style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#333;padding:0 6px;margin:0 0 8px;">Notes</p>
+            <p style="font-size:11px;color:#555;line-height:1.6;padding:0 6px;">{{ software.notes|truncatechars:120 }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Main content -->
+    <div style="padding:24px;min-width:0;overflow:auto;">
+
+        <!-- OVERVIEW TAB -->
+        <div id="tab-overview" class="tab-pane active">
+            <p class="section-title">Product details</p>
+            <div class="card" style="margin-bottom:20px;">
+                <div class="field-grid">
+                    <div class="field-row"><div>Name</div><div style="font-weight:500;">{{ software.name }}</div></div>
+                    <div class="field-row"><div>Publisher</div><div>{{ software.publisher|default:"—" }}</div></div>
+                    <div class="field-row"><div>Version</div><div style="font-family:monospace;">{{ software.version }}</div></div>
+                    <div class="field-row"><div>Category</div><div>{{ software.category|default:"—" }}</div></div>
+                    <div class="field-row"><div>License type</div><div><span class="badge" style="background:#0f1a2e;color:#3b82f6;border:1px solid #1d3a5a;font-size:11px;">{{ software.get_license_type_display }}</span></div></div>
+                    <div class="field-row"><div>Last updated</div><div style="color:#666;">{{ software.updated|date:"F j, Y" }}</div></div>
                 </div>
+            </div>
 
-                <!-- View mode -->
-                <div id="view-mode" style="padding:0;">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
-                        <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);border-right:1px solid var(--bg-2);">
-                            <div class="form-label">License key</div>
-                            <div style="font-size:13px;color:var(--text-2);font-family:monospace;margin-top:2px;word-break:break-all;">{{ software.software_license|default:"—" }}</div>
+            <!-- Seat summary cards -->
+            <p class="section-title">Seat allocation</p>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+                <div style="background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:16px;">
+                    <div style="font-size:24px;font-weight:600;color:#e5e5e5;">{{ software.license_count }}</div>
+                    <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;">Total seats</div>
+                </div>
+                <div style="background:#111;border:1px solid {% if software.is_over_limit %}#991b1b44{% else %}#2a2a2a{% endif %};border-radius:8px;padding:16px;">
+                    <div style="font-size:24px;font-weight:600;color:{% if software.is_over_limit %}#ef4444{% else %}#e5e5e5{% endif %};">{{ software.seats_used }}</div>
+                    <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;">In use</div>
+                </div>
+                <div style="background:#111;border:1px solid {% if software.seats_available <= 0 %}#991b1b44{% else %}#2a2a2a{% endif %};border-radius:8px;padding:16px;">
+                    <div style="font-size:24px;font-weight:600;color:{% if software.seats_available <= 0 %}#ef4444{% elif software.seats_available <= 2 %}#f59e0b{% else %}#22c55e{% endif %};">{{ software.seats_available }}</div>
+                    <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;">Available</div>
+                </div>
+            </div>
+
+            <!-- Utilisation bar -->
+            <div class="card" style="padding:16px 20px;margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <span style="font-size:12px;color:#888;">Seat utilisation</span>
+                    <span style="font-size:13px;font-weight:500;color:{% if software.is_over_limit %}#ef4444{% else %}#ccc{% endif %};">
+                        {% if software.license_count > 0 %}{% widthratio software.seats_used software.license_count 100 %}%{% else %}0%{% endif %}
+                    </span>
+                </div>
+                <div style="height:8px;background:#1a1a1a;border-radius:4px;overflow:hidden;">
+                    {% if software.license_count > 0 %}
+                    <div style="height:100%;width:{% widthratio software.seats_used software.license_count 100 %}%;background:{% if software.is_over_limit %}#ef4444{% elif software.seats_used == software.license_count %}#f59e0b{% else %}#22c55e{% endif %};border-radius:4px;"></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if software.notes %}
+            <p class="section-title">Notes</p>
+            <div class="card" style="padding:16px 20px;">
+                <p style="font-size:13px;color:#aaa;line-height:1.7;white-space:pre-wrap;margin:0;">{{ software.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- LICENSES TAB -->
+        <div id="tab-licenses" class="tab-pane">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <p class="section-title" style="margin:0;">License details</p>
+                <button id="edit-toggle" onclick="toggleEdit()" class="btn-ghost" style="padding:4px 12px;font-size:12px;">Edit</button>
+            </div>
+
+            <!-- View mode -->
+            <div id="view-mode">
+                <div class="card" style="margin-bottom:16px;">
+                    <div class="field-grid">
+                        <div class="field-row">
+                            <div>License key</div>
+                            <div style="font-family:monospace;word-break:break-all;font-size:12px;color:#888;">{{ software.software_license|default:"—" }}</div>
                         </div>
-                        <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);">
-                            <div class="form-label">License type</div>
-                            <div style="font-size:13px;color:var(--text-2);margin-top:2px;">{{ software.get_license_type_display }}</div>
-                        </div>
-                        <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);border-right:1px solid var(--bg-2);">
-                            <div class="form-label">Total seats</div>
-                            <div style="font-size:13px;color:var(--text-2);margin-top:2px;">{{ software.license_count }}</div>
-                        </div>
-                        <div style="padding:14px 16px;border-bottom:1px solid var(--bg-2);">
-                            <div class="form-label">Expiry date</div>
-                            <div style="font-size:13px;margin-top:2px;{% if software.expiry_date and software.expiry_date < today %}color:var(--danger);{% else %}color:var(--text-2);{% endif %}">
-                                {% if software.expiry_date %}{{ software.expiry_date|date:"M d, Y" }}{% if software.expiry_date < today %} <span style="font-size:11px;">(expired)</span>{% endif %}{% else %}—{% endif %}
+                        <div class="field-row"><div>License type</div><div>{{ software.get_license_type_display }}</div></div>
+                        <div class="field-row"><div>Total seats</div><div>{{ software.license_count }}</div></div>
+                        <div class="field-row">
+                            <div>Seats used</div>
+                            <div>
+                                <span style="color:{% if software.is_over_limit %}#ef4444{% else %}#ccc{% endif %};">{{ software.seats_used }}</span>
+                                <span style="color:#444;"> / {{ software.license_count }}</span>
+                                <span style="font-size:11px;color:#444;margin-left:8px;">({{ software.seats_available }} available)</span>
                             </div>
                         </div>
-                        {% if software.notes %}
-                        <div style="padding:14px 16px;grid-column:1/-1;">
-                            <div class="form-label">Notes</div>
-                            <div style="font-size:13px;color:var(--text-2);margin-top:2px;line-height:1.6;white-space:pre-wrap;">{{ software.notes }}</div>
+                        <div class="field-row">
+                            <div>Expiry date</div>
+                            <div style="{% if software.expiry_date and software.expiry_date < today %}color:#ef4444;{% endif %}">
+                                {% if software.expiry_date %}
+                                    {{ software.expiry_date|date:"F j, Y" }}{% if software.expiry_date < today %} <span style="font-size:11px;opacity:.7;">(expired)</span>{% endif %}
+                                {% else %}No expiry date set{% endif %}
+                            </div>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
 
-                <!-- Edit mode (hidden by default) -->
-                <div id="edit-mode" style="display:none;padding:20px;">
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="grid gap-4 mb-4" style="grid-template-columns:1fr 1fr;">
-                            <div class="form-group">
-                                <label class="form-label">Name</label>
-                                <input type="text" name="name" value="{{ software.name }}" class="input-base" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Publisher</label>
-                                <input type="text" name="publisher" value="{{ software.publisher }}" class="input-base">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Version</label>
-                                <input type="text" name="version" value="{{ software.version }}" class="input-base">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Category</label>
-                                <input type="text" name="category" value="{{ software.category }}" class="input-base">
-                            </div>
+                <!-- Seat bar -->
+                <div class="card" style="padding:16px 20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:12px;color:#888;">Seat utilisation</span>
+                        <span style="font-size:12px;color:{% if software.is_over_limit %}#ef4444{% else %}#888{% endif %};">
+                            {% if software.license_count > 0 %}{% widthratio software.seats_used software.license_count 100 %}%{% else %}0%{% endif %}
+                        </span>
+                    </div>
+                    <div style="height:8px;background:#1a1a1a;border-radius:4px;overflow:hidden;">
+                        {% if software.license_count > 0 %}
+                        <div style="height:100%;width:{% widthratio software.seats_used software.license_count 100 %}%;background:{% if software.is_over_limit %}#ef4444{% elif software.seats_used == software.license_count %}#f59e0b{% else %}#22c55e{% endif %};border-radius:4px;"></div>
+                        {% endif %}
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#555;">
+                        <span>{{ software.seats_used }} used</span>
+                        <span>{{ software.license_count }} total</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit mode -->
+            <div id="edit-mode" style="display:none;">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="card" style="padding:20px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="form-group"><label class="form-label">Name</label><input type="text" name="name" value="{{ software.name }}" class="input-base" required></div>
+                            <div class="form-group"><label class="form-label">Publisher</label><input type="text" name="publisher" value="{{ software.publisher }}" class="input-base"></div>
+                            <div class="form-group"><label class="form-label">Version</label><input type="text" name="version" value="{{ software.version }}" class="input-base"></div>
+                            <div class="form-group"><label class="form-label">Category</label><input type="text" name="category" value="{{ software.category }}" class="input-base"></div>
                             <div class="form-group">
                                 <label class="form-label">License type</label>
                                 <select name="license_type" class="input-base">
@@ -125,95 +266,165 @@
                                     <option value="freeware" {% if software.license_type == 'freeware' %}selected{% endif %}>Freeware</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Seats</label>
-                                <input type="number" name="license_count" value="{{ software.license_count }}" class="input-base" min="1" required>
-                            </div>
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">License key</label>
-                                <input type="text" name="software_license" value="{{ software.software_license }}" class="input-base" style="font-family:monospace;">
-                            </div>
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Expiry date</label>
-                                <input type="date" name="expiry_date" value="{{ software.expiry_date|date:'Y-m-d' }}" class="input-base">
-                            </div>
-                            <div class="form-group" style="grid-column:1/-1;">
-                                <label class="form-label">Notes</label>
-                                <textarea name="notes" class="input-base" rows="3">{{ software.notes }}</textarea>
-                            </div>
+                            <div class="form-group"><label class="form-label">Seats</label><input type="number" name="license_count" value="{{ software.license_count }}" class="input-base" min="1" required></div>
+                            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">License key</label><input type="text" name="software_license" value="{{ software.software_license }}" class="input-base" style="font-family:monospace;"></div>
+                            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Expiry date</label><input type="date" name="expiry_date" value="{{ software.expiry_date|date:'Y-m-d' }}" class="input-base"></div>
+                            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Notes</label><textarea name="notes" class="input-base" rows="3">{{ software.notes }}</textarea></div>
                         </div>
-                        <div class="flex justify-end gap-3" style="padding-top:16px;border-top:1px solid var(--border);">
+                        <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:16px;border-top:1px solid #2a2a2a;margin-top:4px;">
                             <button type="button" onclick="toggleEdit()" class="btn-ghost">Cancel</button>
                             <button type="submit" class="btn-primary">Save changes</button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
-
         </div>
 
-        <!-- Right: users -->
-        <div style="display:flex;flex-direction:column;gap:16px;">
-            <div class="card">
-                <div style="padding:12px 16px;border-bottom:1px solid var(--bg-2);display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text-4);">License holders</span>
-                    <span style="font-size:12px;color:{% if software.is_over_limit %}#ef4444{% else %}#555{% endif %};">{{ software.seats_used }} / {{ software.license_count }}</span>
-                </div>
+        <!-- USERS TAB -->
+        <div id="tab-users" class="tab-pane">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <p class="section-title" style="margin:0;">
+                    License holders
+                    <span style="color:#444;font-weight:400;margin-left:6px;">{{ software.seats_used }} / {{ software.license_count }}</span>
+                </p>
+            </div>
 
-                <!-- Assign -->
-                <div style="padding:12px 16px;border-bottom:1px solid var(--bg-2);">
-                    <div style="display:flex;gap:8px;">
-                        <select id="user-select" class="input-base" style="flex:1;font-size:12px;">
-                            <option value="">Assign user…</option>
-                            {% for u in all_users %}
-                            <option value="{{ u.id }}">{{ u.username }}{% if u.get_full_name %} — {{ u.get_full_name }}{% endif %}</option>
-                            {% endfor %}
-                        </select>
-                        <button onclick="assignUser()" class="btn-primary" style="white-space:nowrap;padding:7px 12px;font-size:12px;">Assign</button>
-                    </div>
-                    <div id="assign-error" style="display:none;font-size:12px;color:var(--danger);margin-top:6px;"></div>
+            <!-- Assign -->
+            <div class="card" style="padding:14px 16px;margin-bottom:16px;">
+                <label class="form-label" style="margin-bottom:8px;">Assign a user</label>
+                <div style="display:flex;gap:8px;">
+                    <select id="user-select" class="input-base" style="flex:1;">
+                        <option value="">Select user…</option>
+                        {% for u in all_users %}
+                        <option value="{{ u.id }}">{{ u.username }}{% if u.get_full_name %} — {{ u.get_full_name }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                    <button onclick="assignUser()" class="btn-primary">Assign</button>
                 </div>
+                <div id="assign-error" style="display:none;font-size:12px;color:#ef4444;margin-top:8px;"></div>
+            </div>
 
-                <!-- User list -->
-                <div id="users-list">
-                    {% for u in software.users.all %}
-                    <div id="user-row-{{ u.id }}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--bg-2);">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <div style="width:28px;height:28px;background:var(--bg-2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-3);flex-shrink:0;">{{ u.username|first|upper }}</div>
-                            <div>
-                                <div style="font-size:13px;color:var(--text-2);">{{ u.username }}</div>
-                                <div style="font-size:11px;color:var(--text-4);">{{ u.email|default:"no email" }}</div>
-                            </div>
+            <!-- User rows -->
+            <div class="card" id="users-list">
+                {% for u in software.users.all %}
+                <div id="user-row-{{ u.id }}" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #111;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="width:34px;height:34px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#555;flex-shrink:0;">{{ u.username|first|upper }}</div>
+                        <div>
+                            <div style="font-size:13px;color:#ccc;font-weight:500;">{{ u.get_full_name|default:u.username }}</div>
+                            <div style="font-size:11px;color:#555;margin-top:2px;">{{ u.username }}{% if u.email %} · {{ u.email }}{% endif %}</div>
                         </div>
-                        <button onclick="removeUser({{ u.id }}, '{{ u.username }}')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text-4);padding:4px 6px;border-radius:4px;" onmouseover="this.style.color='#ef4444';this.style.background='#1f0909'" onmouseout="this.style.color='#555';this.style.background='none'" title="Remove">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
                     </div>
-                    {% empty %}
-                    <div id="empty-users" class="empty-state" style="padding:28px;">
-                        <p>No users assigned</p>
-                    </div>
-                    {% endfor %}
+                    <button onclick="removeUser({{ u.id }}, '{{ u.username }}')" title="Remove" style="background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:4px;color:#444;line-height:0;" onmouseover="this.style.color='#ef4444';this.style.background='#1f0909'" onmouseout="this.style.color='#444';this.style.background='none'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
                 </div>
+                {% empty %}
+                <div id="empty-users" class="empty-state" style="padding:48px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <h3>No users assigned</h3>
+                    <p>Use the dropdown above to assign license holders</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
 
     </div>
+
+    <!-- Right panel -->
+    <div style="border-left:1px solid #1a1a1a;padding:16px;">
+        <p style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#555;margin:0 0 14px;">Summary</p>
+
+        <div class="prop-row">
+            <div class="prop-label">Type</div>
+            <div class="prop-value"><span class="badge" style="background:#0f1a2e;color:#3b82f6;border:1px solid #1d3a5a;font-size:10px;">{{ software.get_license_type_display }}</span></div>
+        </div>
+        <div class="prop-row">
+            <div class="prop-label">Seats</div>
+            <div class="prop-value"><span style="color:{% if software.is_over_limit %}#ef4444{% else %}#ccc{% endif %};">{{ software.seats_used }}</span><span style="color:#444;"> / {{ software.license_count }}</span></div>
+        </div>
+        <div class="prop-row">
+            <div class="prop-label">Free</div>
+            <div class="prop-value" style="color:{% if software.seats_available <= 0 %}#ef4444{% elif software.seats_available <= 2 %}#f59e0b{% else %}#22c55e{% endif %};">{{ software.seats_available }}</div>
+        </div>
+        <div class="prop-row">
+            <div class="prop-label">Version</div>
+            <div class="prop-value" style="font-family:monospace;font-size:11px;">{{ software.version }}</div>
+        </div>
+        {% if software.publisher %}
+        <div class="prop-row">
+            <div class="prop-label">Publisher</div>
+            <div class="prop-value" style="font-size:11px;">{{ software.publisher }}</div>
+        </div>
+        {% endif %}
+        <div class="prop-row">
+            <div class="prop-label">Expiry</div>
+            <div class="prop-value" style="font-size:11px;">
+                {% if software.expiry_date %}
+                    {% if software.expiry_date < today %}<span style="color:#ef4444;">{{ software.expiry_date|date:"M d, Y" }}</span>
+                    {% else %}<span style="color:#ccc;">{{ software.expiry_date|date:"M d, Y" }}</span>{% endif %}
+                {% else %}<span style="color:#444;">No expiry</span>{% endif %}
+            </div>
+        </div>
+
+        <div style="height:1px;background:#111;margin:14px 0;"></div>
+
+        <!-- Seat bar -->
+        <p style="font-size:10px;color:#444;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">Seat usage</p>
+        <div style="height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden;margin-bottom:6px;">
+            {% if software.license_count > 0 %}
+            <div style="height:100%;width:{% widthratio software.seats_used software.license_count 100 %}%;background:{% if software.is_over_limit %}#ef4444{% elif software.seats_used == software.license_count %}#f59e0b{% else %}#22c55e{% endif %};border-radius:3px;"></div>
+            {% endif %}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;">
+            <span>{{ software.seats_used }} used</span>
+            <span>{{ software.license_count }} total</span>
+        </div>
+
+        {% if software.expiry_date %}
+        <div style="height:1px;background:#111;margin:14px 0;"></div>
+        <p style="font-size:10px;color:#444;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">License status</p>
+        {% if software.expiry_date < today %}
+        <span class="badge badge-high" style="font-size:10px;">Expired {{ software.expiry_date|date:"M d, Y" }}</span>
+        {% else %}
+        <span class="badge badge-active" style="font-size:10px;">Valid until {{ software.expiry_date|date:"M d, Y" }}</span>
+        {% endif %}
+        {% endif %}
+
+        <div style="height:1px;background:#111;margin:14px 0;"></div>
+        <a href="{% url 'delete-software' software.id %}" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;text-decoration:none;padding:6px 4px;border-radius:4px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#555'">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Delete software
+        </a>
+    </div>
+
 </div>
 
 <script>
 var ASSIGN_URL = "{% url 'assign-user' software.id %}";
 var REMOVE_BASE = "/software/{{ software.id }}/remove-user/";
 var CSRF = "{{ csrf_token }}";
+var TABS = ['overview','licenses','users'];
+
+function switchTab(name) {
+    TABS.forEach(function(t) {
+        document.getElementById('tab-'+t).classList.toggle('active', t === name);
+        var btn = document.getElementById('tab-btn-'+t);
+        var nav = document.getElementById('leftnav-'+t);
+        if (btn) { btn.style.color = t === name ? '#e5e5e5' : '#555'; btn.style.borderBottomColor = t === name ? '#3b82f6' : 'transparent'; }
+        if (nav) nav.classList.toggle('active', t === name);
+    });
+}
 
 function toggleEdit() {
     var vm = document.getElementById('view-mode');
     var em = document.getElementById('edit-mode');
     var btn = document.getElementById('edit-toggle');
+    if (!vm || !em) return;
     var editing = em.style.display !== 'none';
     vm.style.display = editing ? '' : 'none';
     em.style.display = editing ? 'none' : '';
-    btn.textContent = editing ? 'Edit' : 'Cancel';
+    if (btn) btn.textContent = editing ? 'Edit' : 'Cancel';
 }
 
 function assignUser() {
@@ -226,24 +437,20 @@ function assignUser() {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF},
         body: JSON.stringify({user_id: uid})
-    }).then(r => r.json()).then(data => {
-        if (!data.success) {
-            err.textContent = data.error || 'Failed to assign user.';
-            err.style.display = 'block';
-            return;
-        }
+    }).then(r => r.json()).then(function(data) {
+        if (!data.success) { err.textContent = data.error || 'Failed.'; err.style.display = 'block'; return; }
         var u = data.user;
         var empty = document.getElementById('empty-users');
         if (empty) empty.remove();
         var list = document.getElementById('users-list');
         var row = document.createElement('div');
         row.id = 'user-row-' + u.id;
-        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--bg-2);';
-        row.innerHTML = '<div style="display:flex;align-items:center;gap:10px;">' +
-            '<div style="width:28px;height:28px;background:var(--bg-2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-3);flex-shrink:0;">' + u.username[0].toUpperCase() + '</div>' +
-            '<div><div style="font-size:13px;color:var(--text-2);">' + u.username + '</div><div style="font-size:11px;color:var(--text-4);">' + (u.email || 'no email') + '</div></div>' +
-            '</div>' +
-            '<button onclick="removeUser(' + u.id + ', \'' + u.username + '\')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text-4);padding:4px 6px;border-radius:4px;" onmouseover="this.style.color=\'#ef4444\';this.style.background=\'#1f0909\'" onmouseout="this.style.color=\'#555\';this.style.background=\'none\'">' +
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #111;';
+        row.innerHTML = '<div style="display:flex;align-items:center;gap:12px;">' +
+            '<div style="width:34px;height:34px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#555;flex-shrink:0;">' + u.username[0].toUpperCase() + '</div>' +
+            '<div><div style="font-size:13px;color:#ccc;font-weight:500;">' + u.username + '</div>' +
+            '<div style="font-size:11px;color:#555;margin-top:2px;">' + (u.email || '') + '</div></div></div>' +
+            '<button onclick="removeUser(' + u.id + ',\'' + u.username + '\')" style="background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:4px;color:#444;line-height:0;" onmouseover="this.style.color=\'#ef4444\';this.style.background=\'#1f0909\'" onmouseout="this.style.color=\'#444\';this.style.background=\'none\'">' +
             '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
         list.appendChild(row);
         sel.value = '';
@@ -253,20 +460,17 @@ function assignUser() {
 function removeUser(uid, username) {
     if (!confirm('Remove ' + username + ' from this license?')) return;
     fetch(REMOVE_BASE + uid + '/', {
-        method: 'POST',
-        headers: {'X-CSRFToken': CSRF}
-    }).then(r => r.json()).then(data => {
+        method: 'POST', headers: {'X-CSRFToken': CSRF}
+    }).then(r => r.json()).then(function(data) {
         if (data.success) {
             var row = document.getElementById('user-row-' + uid);
             if (row) row.remove();
             var list = document.getElementById('users-list');
             if (!list.querySelector('[id^="user-row-"]')) {
-                var empty = document.createElement('div');
-                empty.id = 'empty-users';
-                empty.className = 'empty-state';
-                empty.style.padding = '28px';
-                empty.innerHTML = '<p>No users assigned</p>';
-                list.appendChild(empty);
+                var e = document.createElement('div');
+                e.id = 'empty-users'; e.className = 'empty-state'; e.style.padding = '48px';
+                e.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><h3>No users assigned</h3><p>Use the dropdown above to assign license holders</p>';
+                list.appendChild(e);
             }
         }
     });
